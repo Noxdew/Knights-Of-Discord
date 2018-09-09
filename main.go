@@ -1,20 +1,18 @@
 package main
 
 import (
-	"fmt"
-
-	"github.com/noxdew/knights-of-discord/bot"
-	"github.com/noxdew/knights-of-discord/config"
+	"github.com/Noxdew/Knights-Of-Discord/bot"
+	"github.com/Noxdew/Knights-Of-Discord/config"
+	"github.com/Noxdew/Knights-Of-Discord/logger"
 )
 
 func main() {
-	// Read the config file, exits on error
-	err := config.ReadConfig()
-	if err != nil {
-		fmt.Println(err.Error)
-		return
-	}
+	// Setup the logger
+	logger.Init()
 
-	// Call the main bot
+	// Read the config file
+	config.Load()
+
+	// Start the game
 	bot.Start()
 }

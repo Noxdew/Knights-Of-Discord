@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/noxdew/knights-of-discord/utils"
+	"github.com/Noxdew/Knights-Of-Discord/utils"
 )
 
 // BuildRoles checks if game roles exist and create them otherwise; give the owner the king role

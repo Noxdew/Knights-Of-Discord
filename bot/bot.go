@@ -1,67 +1,39 @@
 package bot
 
 import (
-	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
+
+	"github.com/Noxdew/Knights-Of-Discord/config"
+	"github.com/Noxdew/Knights-Of-Discord/handlers"
+	"github.com/Noxdew/Knights-Of-Discord/logger"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/noxdew/knights-of-discord/builder"
-	"github.com/noxdew/knights-of-discord/config"
-	"github.com/noxdew/knights-of-discord/utils"
 )
 
-var goBot *discordgo.Session
+var s *discordgo.Session
 
+// Start start the bot, connects it to the Discord servers and starts the game
 func Start() {
 	// Login the bot client and save its user ID
-	goBot, err := discordgo.New("Bot " + config.Token)
+	s, err := discordgo.New("Bot " + config.Get().Token)
 	if err != nil {
-		fmt.Println(err.Error())
-		return
+		logger.Log.Panic(err)
 	}
 
 	// Add event handlers
-	goBot.AddHandler(messageHandler)
-	goBot.AddHandler(serverHandler)
+	s.AddHandler(handlers.ServerJoinHandler)
 
 	// Start the bot's session
-	err = goBot.Open()
+	err = s.Open()
 	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-	fmt.Println("Bot is running")
-
-	<-make(chan struct{})
-}
-
-// Handler function called when a server is joined
-func serverHandler(s *discordgo.Session, g *discordgo.GuildCreate) {
-	// Check for existing game
-	channel := utils.GetChannelByName(g.Guild, "Knights of Discord")
-	if channel != nil {
-		fmt.Println("Checking game integrity...")
-		builder.BuildRoles(s, g.Guild)
-		builder.BuildChannels(s, g.Guild, channel)
-	} else {
-		fmt.Println("Starting new game on the server...")
-		channel, err := s.GuildChannelCreate(g.Guild.ID, "Knights of Discord", "4")
-		if err != nil {
-			fmt.Println(err.Error())
-		} else {
-			builder.BuildRoles(s, g.Guild)
-			builder.BuildChannels(s, g.Guild, channel)
-		}
-	}
-	fmt.Println("Game started.")
-}
-
-// Handler function called when a message is received
-func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
-	if m.Author.Bot {
-		return
+		logger.Log.Panic(err)
 	}
 
-	if m.Content == "ping" {
-		s.ChannelMessageSend(m.ChannelID, "Pong!")
-	}
+	// Wait here until CTRL-C or other term signal is received.
+	logger.Log.Info("Kingts Of Discord is now running.  Press CTRL-C to exit.")
+	sc := make(chan os.Signal, 1)
+	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
+	<-sc
 }

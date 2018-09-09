@@ -1,6 +1,8 @@
-package: github.com/noxdew/knights-of-discord
+package: github.com/Noxdew/Knights-Of-Discord
 import:
 - package: github.com/bwmarrin/discordgo
   version: ^0.18.0
 - package: github.com/gorilla/websocket
   version: ^1.4.0
+- package: github.com/op/go-logging
+  version: ^1.0.0
