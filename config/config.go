@@ -7,12 +7,14 @@ import (
 )
 
 var (
-	Token string
+	Token  string
+	Prefix string
 	config *configStruct
 )
 
 type configStruct struct {
-	Token string `json:"Token"`
+	Token  string `json:"Token"`
+	Prefix string `json:"Prefix"`
 }
 
 func ReadConfig() error {
@@ -28,6 +30,7 @@ func ReadConfig() error {
 		return err
 	}
 	Token = config.Token
+	Prefix = config.Prefix
 	fmt.Println("Confid read.")
 	return nil
 }

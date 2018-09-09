@@ -1,45 +1,42 @@
 package bot
 
 import (
+	"fmt"
+
+	"github.com/bwmarrin/discordgo"
+	"github.com/noxdew/knights-of-discord/builder"
 	"github.com/noxdew/knights-of-discord/config"
 	"github.com/noxdew/knights-of-discord/utils"
-	"github.com/noxdew/knights-of-discord/builder"
-	"fmt"
-	"github.com/bwmarrin/discordgo"
 )
 
-var BotID string
 var goBot *discordgo.Session
 
 func Start() {
+	// Login the bot client and save its user ID
 	goBot, err := discordgo.New("Bot " + config.Token)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
 
-	u, err := goBot.User("@me")
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
-	BotID = u.ID
-
+	// Add event handlers
 	goBot.AddHandler(messageHandler)
-	goBot.AddHandler(serverJoin)
+	goBot.AddHandler(serverHandler)
 
+	// Start the bot's session
 	err = goBot.Open()
-
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
-
 	fmt.Println("Bot is running")
+
 	<-make(chan struct{})
 }
 
-func serverJoin(s *discordgo.Session, g *discordgo.GuildCreate) {
+// Handler function called when a server is joined
+func serverHandler(s *discordgo.Session, g *discordgo.GuildCreate) {
+	// Check for existing game
 	channel := utils.GetChannelByName(g.Guild, "Knights of Discord")
 	if channel != nil {
 		fmt.Println("Checking game integrity...")
@@ -58,8 +55,13 @@ func serverJoin(s *discordgo.Session, g *discordgo.GuildCreate) {
 	fmt.Println("Game started.")
 }
 
+// Handler function called when a message is received
 func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
-	if m.Content == "test" {
-		_, _ = s.ChannelMessageSend(m.ChannelID, "yo mom")
+	if m.Author.Bot {
+		return
+	}
+
+	if m.Content == "ping" {
+		s.ChannelMessageSend(m.ChannelID, "Pong!")
 	}
 }

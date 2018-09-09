@@ -1,11 +1,13 @@
 package builder
 
 import (
+	"fmt"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/noxdew/knights-of-discord/utils"
-	"fmt"
 )
 
+// BuildRoles checks if game roles exist and create them otherwise; give the owner the king role
 func BuildRoles(s *discordgo.Session, g *discordgo.Guild) {
 	fmt.Println("Building roles...")
 	role := utils.GetRoleByName(g, "KoD-King")
@@ -63,17 +65,30 @@ func BuildRoles(s *discordgo.Session, g *discordgo.Guild) {
 	fmt.Println("Roles built.")
 }
 
+// BuildChannels checks if game channels exist and create them otherwise
 func BuildChannels(s *discordgo.Session, g *discordgo.Guild, c *discordgo.Channel) {
 	fmt.Println("Building channels...")
-	ch := utils.GetChannelInCategory(g, c, "announcements")
+	ch := utils.GetChannelInCategory(g, c, "rules")
+	if ch == nil {
+		ch, err := s.GuildChannelCreate(g.ID, "rules", "0")
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		s.ChannelEditComplex(ch.ID, &discordgo.ChannelEdit{
+			Topic:    "Game Rules and Information",
+			Position: 0,
+			ParentID: c.ID,
+		})
+	}
+	ch = utils.GetChannelInCategory(g, c, "announcements")
 	if ch == nil {
 		ch, err := s.GuildChannelCreate(g.ID, "announcements", "0")
 		if err != nil {
 			fmt.Println(err.Error())
 		}
-		s.ChannelEditComplex(ch.ID, &discordgo.ChannelEdit {
-			Topic: "General Castle Information",
-			Position: 0,
+		s.ChannelEditComplex(ch.ID, &discordgo.ChannelEdit{
+			Topic:    "General Castle Information",
+			Position: 1,
 			ParentID: c.ID,
 		})
 	}
@@ -83,9 +98,9 @@ func BuildChannels(s *discordgo.Session, g *discordgo.Guild, c *discordgo.Channe
 		if err != nil {
 			fmt.Println(err.Error())
 		}
-		s.ChannelEditComplex(ch.ID, &discordgo.ChannelEdit {
-			Topic: "Activity Log For The Castle",
-			Position: 1,
+		s.ChannelEditComplex(ch.ID, &discordgo.ChannelEdit{
+			Topic:    "Activity Log For The Castle",
+			Position: 2,
 			ParentID: c.ID,
 		})
 	}
@@ -95,9 +110,9 @@ func BuildChannels(s *discordgo.Session, g *discordgo.Guild, c *discordgo.Channe
 		if err != nil {
 			fmt.Println(err.Error())
 		}
-		s.ChannelEditComplex(ch.ID, &discordgo.ChannelEdit {
-			Topic: "General Social Space For Villagers",
-			Position: 2,
+		s.ChannelEditComplex(ch.ID, &discordgo.ChannelEdit{
+			Topic:    "General Social Space For Villagers",
+			Position: 3,
 			ParentID: c.ID,
 		})
 	}
@@ -107,9 +122,9 @@ func BuildChannels(s *discordgo.Session, g *discordgo.Guild, c *discordgo.Channe
 		if err != nil {
 			fmt.Println(err.Error())
 		}
-		s.ChannelEditComplex(ch.ID, &discordgo.ChannelEdit {
-			Topic: "General Social Space For Esquires",
-			Position: 3,
+		s.ChannelEditComplex(ch.ID, &discordgo.ChannelEdit{
+			Topic:    "General Social Space For Esquires",
+			Position: 4,
 			ParentID: c.ID,
 		})
 	}
@@ -119,9 +134,9 @@ func BuildChannels(s *discordgo.Session, g *discordgo.Guild, c *discordgo.Channe
 		if err != nil {
 			fmt.Println(err.Error())
 		}
-		s.ChannelEditComplex(ch.ID, &discordgo.ChannelEdit {
-			Topic: "General Social Space For Knights",
-			Position: 4,
+		s.ChannelEditComplex(ch.ID, &discordgo.ChannelEdit{
+			Topic:    "General Social Space For Knights",
+			Position: 5,
 			ParentID: c.ID,
 		})
 	}
@@ -131,9 +146,9 @@ func BuildChannels(s *discordgo.Session, g *discordgo.Guild, c *discordgo.Channe
 		if err != nil {
 			fmt.Println(err.Error())
 		}
-		s.ChannelEditComplex(ch.ID, &discordgo.ChannelEdit {
-			Topic: "Activity Center For Villagers",
-			Position: 5,
+		s.ChannelEditComplex(ch.ID, &discordgo.ChannelEdit{
+			Topic:    "Activity Center For Villagers",
+			Position: 6,
 			ParentID: c.ID,
 		})
 	}
@@ -143,9 +158,9 @@ func BuildChannels(s *discordgo.Session, g *discordgo.Guild, c *discordgo.Channe
 		if err != nil {
 			fmt.Println(err.Error())
 		}
-		s.ChannelEditComplex(ch.ID, &discordgo.ChannelEdit {
-			Topic: "Activity Center For Esquires",
-			Position: 6,
+		s.ChannelEditComplex(ch.ID, &discordgo.ChannelEdit{
+			Topic:    "Activity Center For Esquires",
+			Position: 7,
 			ParentID: c.ID,
 		})
 	}
@@ -155,9 +170,9 @@ func BuildChannels(s *discordgo.Session, g *discordgo.Guild, c *discordgo.Channe
 		if err != nil {
 			fmt.Println(err.Error())
 		}
-		s.ChannelEditComplex(ch.ID, &discordgo.ChannelEdit {
-			Topic: "Activity Center For Knights",
-			Position: 7,
+		s.ChannelEditComplex(ch.ID, &discordgo.ChannelEdit{
+			Topic:    "Activity Center For Knights",
+			Position: 8,
 			ParentID: c.ID,
 		})
 	}
