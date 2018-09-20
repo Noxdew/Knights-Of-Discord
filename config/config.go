@@ -9,8 +9,11 @@ import (
 
 // Definition defines the structure of a config for this application
 type Definition struct {
-	Token  string `json:"Token"`
-	Prefix string `json:"Prefix"`
+	Token      string `json:"Token"`
+	Prefix     string `json:"Prefix"`
+	DBUrl      string `json:"DBUrl"`
+	DBUser     string `json:"DBUser"`
+	DBPassword string `json:"DBPassword"`
 }
 
 // Config contains the configuration of this application

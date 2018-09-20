@@ -1,8 +1,6 @@
 package utils
 
-import (
-	"github.com/bwmarrin/discordgo"
-)
+import "github.com/bwmarrin/discordgo"
 
 // GetChannelByName finds channel with name n in guild g
 func GetChannelByName(g *discordgo.Guild, n string) *discordgo.Channel {
@@ -28,6 +26,16 @@ func GetChannelInCategory(g *discordgo.Guild, p *discordgo.Channel, n string) *d
 func GetRoleByName(g *discordgo.Guild, n string) *discordgo.Role {
 	for _, r := range g.Roles {
 		if r.Name == n {
+			return r
+		}
+	}
+	return nil
+}
+
+// GetRoleByID finds role with name n in guild g
+func GetRoleByID(g *discordgo.Guild, n string) *discordgo.Role {
+	for _, r := range g.Roles {
+		if r.ID == n {
 			return r
 		}
 	}

@@ -1,17 +1,94 @@
-hash: 985800aba9acbba6187d45c1978fb9b191388b480daacb5e8bec68c562fae309
-updated: 2018-09-09T22:14:26.438931+01:00
+hash: d359a8717ad6ee4ac82440fd31c4d349d691e7c0be5a0e8b37d98735e28e118f
+updated: 2018-09-19T16:45:28.0872939+03:00
 imports:
+- name: github.com/buger/jsonparser
+  version: 6acdf747ae99cad92d1e8134606008acaca71844
 - name: github.com/bwmarrin/discordgo
   version: 4a33b9bc7c56cfdb9bb244e33e83cb3941fe2bdc
+- name: github.com/go-stack/stack
+  version: 2fee6af1a9795aafbe0253a0cfbdf668e1fb8a9a
+- name: github.com/golang/snappy
+  version: 2e65f85255dbc3072edf28d6b5b8efc472979f5a
 - name: github.com/gorilla/websocket
   version: 66b9c49e59c6c48f0ffce28c2d8b8a5678502c6d
+- name: github.com/mongodb/mongo-go-driver
+  version: b75c1ad5f277465dc7bdcc3d14c5177a89b6a4f9
+  subpackages:
+  - bson
+  - bson/builder
+  - bson/decimal
+  - bson/elements
+  - bson/objectid
+  - bson/parser
+  - bson/parser/ast
+  - core/address
+  - core/auth
+  - core/auth/internal/gssapi
+  - core/command
+  - core/compressor
+  - core/connection
+  - core/connstring
+  - core/description
+  - core/dispatch
+  - core/event
+  - core/option
+  - core/readconcern
+  - core/readpref
+  - core/result
+  - core/session
+  - core/tag
+  - core/topology
+  - core/uuid
+  - core/version
+  - core/wiremessage
+  - core/writeconcern
+  - internal
+  - mongo
+  - mongo/aggregateopt
+  - mongo/changestreamopt
+  - mongo/clientopt
+  - mongo/collectionopt
+  - mongo/countopt
+  - mongo/dbopt
+  - mongo/deleteopt
+  - mongo/distinctopt
+  - mongo/dropcollopt
+  - mongo/findopt
+  - mongo/indexopt
+  - mongo/insertopt
+  - mongo/listcollectionopt
+  - mongo/listdbopt
+  - mongo/mongoopt
+  - mongo/replaceopt
+  - mongo/runcmdopt
+  - mongo/sessionopt
+  - mongo/transactionopt
+  - mongo/updateopt
 - name: github.com/op/go-logging
   version: b2cb9fa56473e98db8caba80237377e83fe44db5
+- name: github.com/xdg/scram
+  version: 7eeb5667e42c09cb51bf7b7c28aea8c56767da90
+- name: github.com/xdg/stringprep
+  version: 73f8eece6fdcd902c185bf651de50f3828bed5ed
 - name: golang.org/x/crypto
-  version: 0709b304e793a5edb4a2c0145f281ecdc20838a4
+  version: 0e37d006457bf46f9e6692014ba72ef82c33022c
   subpackages:
   - internal/subtle
   - nacl/secretbox
+  - pbkdf2
   - poly1305
   - salsa20/salsa
+- name: golang.org/x/net
+  version: 26e67e76b6c3f6ce91f7c52def5af501b4e0f3a2
+  subpackages:
+  - context
+- name: golang.org/x/sync
+  version: 1d60e4601c6fd243af51cc01ddf169918a5407ca
+  subpackages:
+  - semaphore
+- name: golang.org/x/text
+  version: 905a57155faa8230500121607930ebb9dd8e139c
+  subpackages:
+  - transform
+  - unicode/norm
 testImports: []

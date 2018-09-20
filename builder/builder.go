@@ -3,66 +3,99 @@ package builder
 import (
 	"fmt"
 
-	"github.com/bwmarrin/discordgo"
+	"github.com/Noxdew/Knights-Of-Discord/db"
+	"github.com/Noxdew/Knights-Of-Discord/logger"
 	"github.com/Noxdew/Knights-Of-Discord/utils"
+	"github.com/bwmarrin/discordgo"
 )
 
-// BuildRoles checks if game roles exist and create them otherwise; give the owner the king role
-func BuildRoles(s *discordgo.Session, g *discordgo.Guild) {
-	fmt.Println("Building roles...")
-	role := utils.GetRoleByName(g, "KoD-King")
-	if role == nil {
-		role, err := s.GuildRoleCreate(g.ID)
-		if err != nil {
-			fmt.Println(err.Error())
-		} else {
-			baseRole := utils.GetRoleByName(g, "@everyone")
-			perm := baseRole.Permissions
-			s.GuildRoleEdit(g.ID, role.ID, "KoD-King", 0, false, perm, true)
-		}
-	}
-	king, err := s.GuildMember(g.ID, g.OwnerID)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	if !utils.HasRole(king, role.Name) {
-		s.GuildMemberRoleAdd(g.ID, king.User.ID, role.ID)
-	}
+// BuildServer creates a new server for the game to run on housed in Discord Server g
+func BuildServer(g *discordgo.Guild) {
+	logger.Log.Info("Building server...")
+	db.CreateServer(db.Server{
+		ID:    g.ID,
+		Power: 0,
+	})
+	logger.Log.Info("Game started for %s (%s)", g.Name, g.ID)
+}
 
-	role = utils.GetRoleByName(g, "KoD-Knight")
-	if role == nil {
-		role, err := s.GuildRoleCreate(g.ID)
+// DestroyServer removes the Discord server from the DB
+func DestroyServer(g *discordgo.Guild) {
+	logger.Log.Info("Destroying server...")
+	db.RemoveServer(g.ID)
+	logger.Log.Info("Server destroyed.")
+}
+
+// BuildRoles creates Discord roles for the game to use
+func BuildRoles(s *discordgo.Session, g *discordgo.Guild, roles []string) {
+	logger.Log.Info("Building roles...")
+	baseRole := utils.GetRoleByName(g, "@everyone")
+	for _, role := range roles {
+		r, err := s.GuildRoleCreate(g.ID)
 		if err != nil {
-			fmt.Println(err.Error())
+			logger.Log.Error(err.Error())
 		} else {
-			baseRole := utils.GetRoleByName(g, "@everyone")
-			perm := baseRole.Permissions
-			s.GuildRoleEdit(g.ID, role.ID, "KoD-Knight", 0, false, perm, true)
+			s.GuildRoleEdit(g.ID, r.ID, role, 0, false, baseRole.Permissions, true)
+			_, err := db.GetRole(g.ID, role)
+			if err != nil && err != db.NotFound {
+				logger.Log.Error(err.Error())
+			}
+			if err == db.NotFound {
+				logger.Log.Info("Creating role %s", role)
+				db.CreateRole(db.Role{
+					ID:       r.ID,
+					ServerID: g.ID,
+					Type:     role,
+				})
+			} else {
+				logger.Log.Info("Updating role %s", role)
+				logger.Log.Debug("%s", r.ID)
+				db.UpdateRole(db.Role{
+					ID:       r.ID,
+					ServerID: g.ID,
+					Type:     role,
+				})
+			}
 		}
 	}
-	role = utils.GetRoleByName(g, "KoD-Esquire")
-	if role == nil {
-		role, err := s.GuildRoleCreate(g.ID)
-		if err != nil {
-			fmt.Println(err.Error())
-		} else {
-			baseRole := utils.GetRoleByName(g, "@everyone")
-			perm := baseRole.Permissions
-			s.GuildRoleEdit(g.ID, role.ID, "KoD-Esquire", 0, false, perm, true)
+	logger.Log.Info("Roles built.")
+}
+
+// CheckRoles checks the condition of the game roles on an existing server and rebuilds them
+func CheckRoles(s *discordgo.Session, g *discordgo.Guild) {
+	logger.Log.Info("Checking Roles...")
+	var rebuilding []string
+	dbRoles, err := db.GetRoles(g.ID)
+	if err != nil {
+		logger.Log.Error(err.Error())
+	}
+	for _, role := range *dbRoles {
+		r := utils.GetRoleByID(g, role.ID)
+		if r == nil {
+			rebuilding = append(rebuilding, role.Type)
 		}
 	}
-	role = utils.GetRoleByName(g, "KoD-Villager")
-	if role == nil {
-		role, err := s.GuildRoleCreate(g.ID)
+	if len(rebuilding) > 0 {
+		BuildRoles(s, g, rebuilding)
+	}
+	logger.Log.Info("Roles checked.")
+}
+
+// DestroyRoles removes the Discord game roles from server g
+func DestroyRoles(s *discordgo.Session, g *discordgo.Guild) {
+	logger.Log.Info("Destroying Roles...")
+	dbRoles, err := db.GetRoles(g.ID)
+	if err != nil {
+		logger.Log.Error(err.Error())
+	}
+	for _, role := range *dbRoles {
+		err := s.GuildRoleDelete(g.ID, role.ID)
 		if err != nil {
-			fmt.Println(err.Error())
-		} else {
-			baseRole := utils.GetRoleByName(g, "@everyone")
-			perm := baseRole.Permissions
-			s.GuildRoleEdit(g.ID, role.ID, "KoD-Villager", 0, false, perm, true)
+			logger.Log.Error(err.Error())
 		}
 	}
-	fmt.Println("Roles built.")
+	db.RemoveRoles(g.ID)
+	logger.Log.Info("Roles destroyed.")
 }
 
 // BuildChannels checks if game channels exist and create them otherwise

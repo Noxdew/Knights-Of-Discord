@@ -6,3 +6,7 @@ import:
   version: ^1.4.0
 - package: github.com/op/go-logging
   version: ^1.0.0
+- package: github.com/mongodb/mongo-go-driver
+  version: ^0.0.13
+  subpackages:
+  - mongo
