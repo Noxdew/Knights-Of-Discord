@@ -6,7 +6,7 @@ A Discord bot used to bring life to your servers through an RPG-styled in-chat g
 
 **Knights Of Discord is still work in progress and is currently unplayable!**
 
-[Click here to add Knights Of Discord to your server/guild](https://discordapp.com/oauth2/authorize?client_id=487744442531315712&scope=bot&permissions=1342308434)
+[Click here to add Knights Of Discord to your server/guild](https://discordapp.com/oauth2/authorize?client_id=487744442531315712&scope=bot&permissions=1342308432)
 
 ## Current State
 
