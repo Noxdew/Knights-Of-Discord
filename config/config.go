@@ -9,11 +9,13 @@ import (
 
 // Definition defines the structure of a config for this application
 type Definition struct {
-	Token      string `json:"Token"`
-	Prefix     string `json:"Prefix"`
-	DBUrl      string `json:"DBUrl"`
-	DBUser     string `json:"DBUser"`
-	DBPassword string `json:"DBPassword"`
+	Token      string   `json:"Token"`
+	Prefix     string   `json:"Prefix"`
+	DBUrl      string   `json:"DBUrl"`
+	DBUser     string   `json:"DBUser"`
+	DBPassword string   `json:"DBPassword"`
+	Roles      []string `json:"Roles"`
+	RolePerm   int      `json:"RolePerm"`
 }
 
 // Config contains the configuration of this application

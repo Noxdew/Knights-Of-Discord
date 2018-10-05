@@ -10,26 +10,21 @@ import (
 	"github.com/mongodb/mongo-go-driver/mongo"
 )
 
+// NotFound represents empty query results
 var NotFound = mongo.ErrNoDocuments
 
 // Server represents a Discord Guild in the game
 type Server struct {
-	ID    string `json:"id" bson:"id"`
-	Power int    `json:"power" bson:"power"`
+	ID      string `json:"id" bson:"id"`
+	Power   int    `json:"power" bson:"power"`
+	Checked bool   `json:"checked" bson:"checked"`
+	Roles   []Role `json:"roles" bson:"roles"`
 }
 
 // Role represents a Discord Role in the game
 type Role struct {
-	ID       string `json:"id" bson:"id"`
-	ServerID string `json:"serverId" bson:"serverId"`
-	Type     string `json:"type" bson:"type"`
-}
-
-// Channel represents a Discord text Channel in the game
-type Channel struct {
-	ID       string `json:"id" bson:"id"`
-	ServerID string `json:"serverId" bson:"serverId"`
-	Type     string `json:"type" bson:"type"`
+	ID   string `json:"id" bson:"id"`
+	Type string `json:"type" bson:"type"`
 }
 
 func connect() *mongo.Client {
@@ -75,64 +70,35 @@ func RemoveServer(s string) error {
 	return err
 }
 
-// GetRoles returns all game Roles associated with Server s
-func GetRoles(s string) (*[]Role, error) {
-	client := connect()
-	collection := client.Database("knights-of-discord").Collection("roles")
-	filter := bson.NewDocument(bson.EC.String("serverId", s))
-	docs, err := collection.Find(context.Background(), filter)
-	con := context.Background()
-	defer docs.Close(con)
-	var roles []Role
-	for docs.Next(con) {
-		role := Role{}
-		err := docs.Decode(&role)
-		if err != nil {
-			logger.Log.Error(err.Error())
-		}
-		roles = append(roles, role)
-	}
-	return &roles, err
-}
-
-// GetRole returns a game Role with ID s
-func GetRole(g string, s string) (*Role, error) {
+// FlagServers changes the `checked` value of all DB servers to `b`
+func FlagServers(b bool) error {
 	client := connect()
 	defer client.Disconnect(context.Background())
-	collection := client.Database("knights-of-discord").Collection("roles")
-	filter := bson.NewDocument(bson.EC.String("serverId", g), bson.EC.String("type", s))
-	role := Role{}
-	doc := collection.FindOne(context.Background(), filter)
-	err := doc.Decode(&role)
-	return &role, err
-}
-
-// CreateRole uploads a new role to the DB
-func CreateRole(r Role) error {
-	client := connect()
-	defer client.Disconnect(context.Background())
-	collection := client.Database("knights-of-discord").Collection("roles")
-	_, err := collection.InsertOne(context.Background(), r)
+	collection := client.Database("knights-of-discord").Collection("servers")
+	filter := bson.NewDocument()
+	replacement := bson.NewDocument(bson.EC.SubDocumentFromElements("$set", bson.EC.Boolean("checked", b)))
+	_, err := collection.UpdateMany(context.Background(), filter, replacement)
 	return err
 }
 
-// UpdateRole updates an existing role in the DB
-func UpdateRole(r Role) error {
+// CreateRole uploads new role `r` to server `s`
+func CreateRole(r Role, s string) error {
 	client := connect()
 	defer client.Disconnect(context.Background())
-	collection := client.Database("knights-of-discord").Collection("roles")
-	filter := bson.NewDocument(bson.EC.String("serverId", r.ServerID), bson.EC.String("type", r.Type))
-	replacement := bson.NewDocument(bson.EC.SubDocumentFromElements("$set", bson.EC.String("id", r.ID)))
+	collection := client.Database("knights-of-discord").Collection("servers")
+	filter := bson.NewDocument(bson.EC.String("id", s))
+	replacement := bson.NewDocument(bson.EC.SubDocumentFromElements("$push", bson.EC.Interface("roles", r)))
 	_, err := collection.UpdateOne(context.Background(), filter, replacement)
 	return err
 }
 
-// RemoveRoles removes server s roles from the DB
-func RemoveRoles(s string) error {
+// UpdateRole updates an existing role in server `s`
+func UpdateRole(r Role, s string) error {
 	client := connect()
 	defer client.Disconnect(context.Background())
-	collection := client.Database("knights-of-discord").Collection("roles")
-	filter := bson.NewDocument(bson.EC.String("serverId", s))
-	_, err := collection.DeleteMany(context.Background(), filter)
+	collection := client.Database("knights-of-discord").Collection("servers")
+	filter := bson.NewDocument(bson.EC.String("id", s), bson.EC.String("roles.type", r.Type))
+	replacement := bson.NewDocument(bson.EC.SubDocumentFromElements("$set", bson.EC.Interface("roles.$.id", r.ID)))
+	_, err := collection.UpdateOne(context.Background(), filter, replacement)
 	return err
 }

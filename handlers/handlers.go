@@ -11,14 +11,12 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-var roles = []string{
-	"KoD-King",
-	"KoD-Knight",
-	"KoD-Esquire",
-	"KoD-Villager",
+// ReadyHandler is called when `Ready` event is triggered
+func ReadyHandler(s *discordgo.Session, r *discordgo.Ready) {
+	logger.Log.Info("Knights of Discord has successfully started.")
 }
 
-// ServerJoinHandler function called when a server is joined
+// ServerJoinHandler is called when `GuildCreate` event is triggered
 func ServerJoinHandler(s *discordgo.Session, g *discordgo.GuildCreate) {
 	// Check for existing game
 	_, err := db.GetServer(g.Guild.ID)
@@ -26,11 +24,37 @@ func ServerJoinHandler(s *discordgo.Session, g *discordgo.GuildCreate) {
 		logger.Log.Error(err.Error())
 	}
 	if err == db.NotFound {
-		builder.BuildServer(g.Guild)
-		builder.BuildRoles(s, g.Guild, roles)
-	} else {
-		builder.CheckRoles(s, g.Guild)
-		logger.Log.Info("Game already running on %s (%s)", g.Guild.Name, g.Guild.ID)
+		builder.BuildServer(s, g.Guild)
+	}
+}
+
+// RoleEditHandler function called when `GuildRoleUpdate` is triggered
+func RoleEditHandler(s *discordgo.Session, r *discordgo.GuildRoleUpdate) {
+	server, err := db.GetServer(r.GuildID)
+	if err != nil {
+		logger.Log.Error(err.Error())
+	}
+	for _, role := range server.Roles {
+		g, _ := s.Guild(r.GuildID)
+		if role.ID == r.Role.ID {
+			if !r.Role.Mentionable || r.Role.Permissions != config.Get().RolePerm {
+				builder.FixRole(s, g, r.Role)
+			}
+		}
+	}
+}
+
+// RoleDeleteHandler function called when `GuildRoleDelete` is triggered
+func RoleDeleteHandler(s *discordgo.Session, r *discordgo.GuildRoleDelete) {
+	server, err := db.GetServer(r.GuildID)
+	if err != nil {
+		logger.Log.Error(err.Error())
+	}
+	for _, role := range server.Roles {
+		g, _ := s.Guild(r.GuildID)
+		if role.ID == r.RoleID {
+			builder.BuildRole(s, g, role.Type)
+		}
 	}
 }
 
@@ -44,8 +68,7 @@ func MessageReceiveHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if strings.HasPrefix(m.Content, config.Get().Prefix) {
 		command := strings.Split(m.Content, config.Get().Prefix)[1]
 		if command == "closeGame" && m.Author.ID == g.OwnerID {
-			builder.DestroyRoles(s, g)
-			builder.DestroyServer(g)
+			builder.DestroyServer(s, g)
 			s.ChannelMessageSend(m.ChannelID, "Game has been closed.")
 			err := s.GuildLeave(g.ID)
 			if err != nil {

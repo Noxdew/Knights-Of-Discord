@@ -6,6 +6,7 @@ import (
 	"syscall"
 
 	"github.com/Noxdew/Knights-Of-Discord/config"
+	"github.com/Noxdew/Knights-Of-Discord/db"
 	"github.com/Noxdew/Knights-Of-Discord/handlers"
 	"github.com/Noxdew/Knights-Of-Discord/logger"
 
@@ -22,8 +23,17 @@ func Start() {
 		logger.Log.Panic(err)
 	}
 
+	// Flag all servers for integrity check
+	err = db.FlagServers(false)
+	if err != nil {
+		logger.Log.Panic(err)
+	}
+
 	// Add event handlers
+	s.AddHandler(handlers.ReadyHandler)
 	s.AddHandler(handlers.ServerJoinHandler)
+	s.AddHandler(handlers.RoleEditHandler)
+	s.AddHandler(handlers.RoleDeleteHandler)
 	s.AddHandler(handlers.MessageReceiveHandler)
 
 	// Start the bot's session
@@ -33,7 +43,6 @@ func Start() {
 	}
 
 	// Wait here until CTRL-C or other term signal is received.
-	logger.Log.Info("Kingts Of Discord is now running.  Press CTRL-C to exit.")
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-sc
