@@ -22,17 +22,28 @@ func ServerJoinHandler(s *discordgo.Session, g *discordgo.GuildCreate) {
 	_, err := db.GetServer(g.Guild.ID)
 	if err != nil && err != db.NotFound {
 		logger.Log.Error(err.Error())
-	}
-	if err == db.NotFound {
+	} else if err == db.NotFound {
 		builder.BuildServer(s, g.Guild)
 	}
 }
 
-// RoleEditHandler function called when `GuildRoleUpdate` is triggered
+// ServerLeaveHandler is called when `GuildDelete` event is triggered
+func ServerLeaveHandler(s *discordgo.Session, g *discordgo.GuildDelete) {
+	err := db.RemoveServer(g.Guild.ID)
+	if err != nil {
+		logger.Log.Error(err.Error())
+	}
+}
+
+// RoleEditHandler is called when `GuildRoleUpdate` event is triggered
 func RoleEditHandler(s *discordgo.Session, r *discordgo.GuildRoleUpdate) {
 	server, err := db.GetServer(r.GuildID)
 	if err != nil {
 		logger.Log.Error(err.Error())
+		return
+	}
+	if !server.Playing {
+		return
 	}
 	for _, role := range server.Roles {
 		g, _ := s.Guild(r.GuildID)
@@ -44,11 +55,15 @@ func RoleEditHandler(s *discordgo.Session, r *discordgo.GuildRoleUpdate) {
 	}
 }
 
-// RoleDeleteHandler function called when `GuildRoleDelete` is triggered
+// RoleDeleteHandler is called when `GuildRoleDelete` event is triggered
 func RoleDeleteHandler(s *discordgo.Session, r *discordgo.GuildRoleDelete) {
 	server, err := db.GetServer(r.GuildID)
 	if err != nil {
 		logger.Log.Error(err.Error())
+		return
+	}
+	if !server.Playing {
+		return
 	}
 	for _, role := range server.Roles {
 		g, _ := s.Guild(r.GuildID)
@@ -58,11 +73,46 @@ func RoleDeleteHandler(s *discordgo.Session, r *discordgo.GuildRoleDelete) {
 	}
 }
 
+// ChannelEditHandler is called when `ChannelUpdate` event is triggered
+// TODO
+
+// ChannelDeleteHandler is called when `ChannelDelete` event is triggered
+func ChannelDeleteHandler(s *discordgo.Session, c *discordgo.ChannelDelete) {
+	logger.Log.Debug("BOOP")
+	server, err := db.GetServer(c.Channel.GuildID)
+	if err != nil {
+		logger.Log.Error(err.Error())
+		return
+	}
+	if !server.Playing {
+		return
+	}
+	g, _ := s.Guild(c.Channel.GuildID)
+	for _, channel := range server.Channels {
+		if channel.ID == c.Channel.ID {
+			for _, ch := range config.Get().Channels {
+				if ch.Name == channel.Name {
+					builder.BuildChannel(s, g, ch)
+					break
+				}
+			}
+		}
+	}
+}
+
 // MessageReceiveHandler function called when message is sent
 func MessageReceiveHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
-	c, _ := s.Channel(m.ChannelID)
-	g, _ := s.Guild(c.GuildID)
 	if m.Author.Bot {
+		return
+	}
+	c, err := s.Channel(m.ChannelID)
+	if err != nil {
+		logger.Log.Error(err.Error())
+		return
+	}
+	g, err := s.Guild(c.GuildID)
+	if err != nil {
+		logger.Log.Error(err.Error())
 		return
 	}
 	if strings.HasPrefix(m.Content, config.Get().Prefix) {

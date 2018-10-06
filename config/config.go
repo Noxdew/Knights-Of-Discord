@@ -9,13 +9,21 @@ import (
 
 // Definition defines the structure of a config for this application
 type Definition struct {
-	Token      string   `json:"Token"`
-	Prefix     string   `json:"Prefix"`
-	DBUrl      string   `json:"DBUrl"`
-	DBUser     string   `json:"DBUser"`
-	DBPassword string   `json:"DBPassword"`
-	Roles      []string `json:"Roles"`
-	RolePerm   int      `json:"RolePerm"`
+	Token      string          `json:"Token"`
+	Prefix     string          `json:"Prefix"`
+	DBUrl      string          `json:"DBUrl"`
+	DBUser     string          `json:"DBUser"`
+	DBPassword string          `json:"DBPassword"`
+	Roles      []string        `json:"Roles"`
+	RolePerm   int             `json:"RolePerm"`
+	Channels   []ChannelConfig `json:"Channels"`
+}
+
+// ChannelConfig defines config structure of a channel
+type ChannelConfig struct {
+	Name string   `json:"name"`
+	Type string   `json:"type"`
+	Role []string `json:"role"`
 }
 
 // Config contains the configuration of this application

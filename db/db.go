@@ -15,15 +15,25 @@ var NotFound = mongo.ErrNoDocuments
 
 // Server represents a Discord Guild in the game
 type Server struct {
-	ID      string `json:"id" bson:"id"`
-	Power   int    `json:"power" bson:"power"`
-	Checked bool   `json:"checked" bson:"checked"`
-	Roles   []Role `json:"roles" bson:"roles"`
+	ID       string    `json:"id" bson:"id"`
+	Checked  bool      `json:"checked" bson:"checked"`
+	Playing  bool      `json:"playing" bson:"playing"`
+	Power    int       `json:"power" bson:"power"`
+	Roles    []Role    `json:"roles" bson:"roles"`
+	Category string    `json:"category" bson:"category"`
+	Channels []Channel `json:"channels" bson:"channels"`
 }
 
 // Role represents a Discord Role in the game
 type Role struct {
 	ID   string `json:"id" bson:"id"`
+	Type string `json:"type" bson:"type"`
+}
+
+// Channel represents a Discord Channel in the game
+type Channel struct {
+	ID   string `json:"id" bson:"id"`
+	Name string `json:"name" bson:"name"`
 	Type string `json:"type" bson:"type"`
 }
 
@@ -81,6 +91,17 @@ func FlagServers(b bool) error {
 	return err
 }
 
+// UpdateServerStatus changes the `playing` value for server `s` to `b`
+func UpdateServerStatus(s string, b bool) error {
+	client := connect()
+	defer client.Disconnect(context.Background())
+	collection := client.Database("knights-of-discord").Collection("servers")
+	filter := bson.NewDocument(bson.EC.String("id", s))
+	replacement := bson.NewDocument(bson.EC.SubDocumentFromElements("$set", bson.EC.Boolean("playing", b)))
+	_, err := collection.UpdateMany(context.Background(), filter, replacement)
+	return err
+}
+
 // CreateRole uploads new role `r` to server `s`
 func CreateRole(r Role, s string) error {
 	client := connect()
@@ -99,6 +120,39 @@ func UpdateRole(r Role, s string) error {
 	collection := client.Database("knights-of-discord").Collection("servers")
 	filter := bson.NewDocument(bson.EC.String("id", s), bson.EC.String("roles.type", r.Type))
 	replacement := bson.NewDocument(bson.EC.SubDocumentFromElements("$set", bson.EC.Interface("roles.$.id", r.ID)))
+	_, err := collection.UpdateOne(context.Background(), filter, replacement)
+	return err
+}
+
+// CreateCategory uploads a new category `c` to server `s`
+func CreateCategory(c string, s string) error {
+	client := connect()
+	defer client.Disconnect(context.Background())
+	collection := client.Database("knights-of-discord").Collection("servers")
+	filter := bson.NewDocument(bson.EC.String("id", s))
+	replacement := bson.NewDocument(bson.EC.SubDocumentFromElements("$set", bson.EC.String("category", c)))
+	_, err := collection.UpdateOne(context.Background(), filter, replacement)
+	return err
+}
+
+// CreateChannel uploads new channel `c` to server `s`
+func CreateChannel(c Channel, s string) error {
+	client := connect()
+	defer client.Disconnect(context.Background())
+	collection := client.Database("knights-of-discord").Collection("servers")
+	filter := bson.NewDocument(bson.EC.String("id", s))
+	replacement := bson.NewDocument(bson.EC.SubDocumentFromElements("$push", bson.EC.Interface("channels", c)))
+	_, err := collection.UpdateOne(context.Background(), filter, replacement)
+	return err
+}
+
+// UpdateChannel updates an existing channel in server `s`
+func UpdateChannel(c Channel, s string) error {
+	client := connect()
+	defer client.Disconnect(context.Background())
+	collection := client.Database("knights-of-discord").Collection("servers")
+	filter := bson.NewDocument(bson.EC.String("id", s), bson.EC.String("channels.name", c.Name))
+	replacement := bson.NewDocument(bson.EC.SubDocumentFromElements("$set", bson.EC.Interface("channels.$.id", c.ID)))
 	_, err := collection.UpdateOne(context.Background(), filter, replacement)
 	return err
 }
