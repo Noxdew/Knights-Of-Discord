@@ -7,7 +7,7 @@ import (
 	"github.com/Noxdew/Knights-Of-Discord/config"
 	"github.com/Noxdew/Knights-Of-Discord/db"
 	"github.com/Noxdew/Knights-Of-Discord/logger"
-
+	"github.com/Noxdew/Knights-Of-Discord/utils"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -18,12 +18,14 @@ func ReadyHandler(s *discordgo.Session, r *discordgo.Ready) {
 
 // ServerJoinHandler is called when `GuildCreate` event is triggered
 func ServerJoinHandler(s *discordgo.Session, g *discordgo.GuildCreate) {
-	// Check for existing game
 	_, err := db.GetServer(g.Guild.ID)
 	if err != nil && err != db.NotFound {
 		logger.Log.Error(err.Error())
 	} else if err == db.NotFound {
 		builder.BuildServer(s, g.Guild)
+	} else {
+		db.UpdateServerChecked(g.Guild.ID, false)
+		db.UpdateServerPlaying(g.Guild.ID, true)
 	}
 }
 
@@ -45,13 +47,17 @@ func RoleEditHandler(s *discordgo.Session, r *discordgo.GuildRoleUpdate) {
 	if !server.Playing {
 		return
 	}
-	for _, role := range server.Roles {
-		g, _ := s.Guild(r.GuildID)
-		if role.ID == r.Role.ID {
-			if !r.Role.Mentionable || r.Role.Permissions != config.Get().RolePerm {
-				builder.FixRole(s, g, r.Role)
-			}
-		}
+	g, err := s.Guild(r.GuildID)
+	if err != nil {
+		logger.Log.Error(err.Error())
+		return
+	}
+	_, err = utils.GetServerRoleByID(r.Role.ID, server)
+	if err != nil {
+		return
+	}
+	if !utils.CheckRole(r.Role) {
+		builder.FixRole(s, g, r.Role)
 	}
 }
 
@@ -65,20 +71,44 @@ func RoleDeleteHandler(s *discordgo.Session, r *discordgo.GuildRoleDelete) {
 	if !server.Playing {
 		return
 	}
-	for _, role := range server.Roles {
-		g, _ := s.Guild(r.GuildID)
-		if role.ID == r.RoleID {
-			builder.BuildRole(s, g, role.Type)
-		}
+	g, err := s.Guild(r.GuildID)
+	if err != nil {
+		logger.Log.Error(err.Error())
+		return
 	}
+	role, err := utils.GetServerRoleByID(r.RoleID, server)
+	if err != nil {
+		return
+	}
+	builder.BuildRole(s, g, role.DefName)
 }
 
 // ChannelEditHandler is called when `ChannelUpdate` event is triggered
-// TODO
+func ChannelEditHandler(s *discordgo.Session, c *discordgo.ChannelUpdate) {
+	server, err := db.GetServer(c.GuildID)
+	if err != nil {
+		logger.Log.Error(err.Error())
+		return
+	}
+	if !server.Playing {
+		return
+	}
+	g, err := s.Guild(c.GuildID)
+	if err != nil {
+		logger.Log.Error(err.Error())
+		return
+	}
+	_, err = utils.GetServerChannelByID(c.Channel.ID, server)
+	if err != nil {
+		return
+	}
+	if !utils.CheckChannel(c.Channel, g) {
+		builder.FixChannel(s, g, c.Channel)
+	}
+}
 
 // ChannelDeleteHandler is called when `ChannelDelete` event is triggered
 func ChannelDeleteHandler(s *discordgo.Session, c *discordgo.ChannelDelete) {
-	logger.Log.Debug("BOOP")
 	server, err := db.GetServer(c.Channel.GuildID)
 	if err != nil {
 		logger.Log.Error(err.Error())
@@ -87,17 +117,22 @@ func ChannelDeleteHandler(s *discordgo.Session, c *discordgo.ChannelDelete) {
 	if !server.Playing {
 		return
 	}
-	g, _ := s.Guild(c.Channel.GuildID)
-	for _, channel := range server.Channels {
-		if channel.ID == c.Channel.ID {
-			for _, ch := range config.Get().Channels {
-				if ch.Name == channel.Name {
-					builder.BuildChannel(s, g, ch)
-					break
-				}
-			}
-		}
+	g, err := s.Guild(c.Channel.GuildID)
+	if err != nil {
+		logger.Log.Error(err.Error())
+		return
 	}
+	if c.Channel.ID == server.Category {
+		builder.BuildCategory(s, g)
+		return
+	}
+	channel, err := utils.GetServerChannelByID(c.Channel.ID, server)
+	if err != nil {
+		logger.Log.Error(err.Error())
+		return
+	}
+	ch, err := utils.GetConfigChannelByName(channel.DefName)
+	builder.BuildChannel(s, g, ch)
 }
 
 // MessageReceiveHandler function called when message is sent

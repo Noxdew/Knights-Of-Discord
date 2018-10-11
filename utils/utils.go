@@ -1,53 +1,89 @@
 package utils
 
-import "github.com/bwmarrin/discordgo"
+import (
+	"github.com/Noxdew/Knights-Of-Discord/config"
+	"github.com/Noxdew/Knights-Of-Discord/db"
+	"github.com/Noxdew/Knights-Of-Discord/logger"
+	"github.com/bwmarrin/discordgo"
+)
 
-// GetChannelByName finds channel with name n in guild g
-func GetChannelByName(g *discordgo.Guild, n string) *discordgo.Channel {
-	for _, ch := range g.Channels {
-		if ch.Name == n {
-			return ch
+// GetServerRoleByName returns Role with default name `r` from Server `s`
+func GetServerRoleByName(r string, s *db.Server) (db.Role, error) {
+	for _, role := range s.Roles {
+		if role.DefName == r {
+			return role, nil
 		}
 	}
-	return nil
+	return db.Role{}, db.NotFound
 }
 
-// GetChannelInCategory finds channel with name n nested in category p in guild g
-func GetChannelInCategory(g *discordgo.Guild, p *discordgo.Channel, n string) *discordgo.Channel {
-	for _, ch := range g.Channels {
-		if ch.ParentID == p.ID && ch.Name == n {
-			return ch
+// GetServerRoleByID returns Role with ID `r` from Server `s`
+func GetServerRoleByID(r string, s *db.Server) (db.Role, error) {
+	if len(s.Roles) < 1 {
+		return db.Role{}, db.NotFound
+	}
+	for _, role := range s.Roles {
+		if role.ID == r {
+			return role, nil
 		}
 	}
-	return nil
+	return db.Role{}, db.NotFound
 }
 
-// GetRoleByName finds role with name n in guild g
-func GetRoleByName(g *discordgo.Guild, n string) *discordgo.Role {
-	for _, r := range g.Roles {
-		if r.Name == n {
-			return r
-		}
+// CheckRole evaluates Role `r` against desired game role options
+func CheckRole(r *discordgo.Role) bool {
+	if !r.Mentionable || r.Permissions != config.Get().RolePerm {
+		return false
 	}
-	return nil
+	return true
 }
 
-// GetRoleByID finds role with name n in guild g
-func GetRoleByID(g *discordgo.Guild, n string) *discordgo.Role {
-	for _, r := range g.Roles {
-		if r.ID == n {
-			return r
+// GetServerChannelByName returns Channel with default name `c` from Server `s`
+func GetServerChannelByName(c string, s *db.Server) (db.Channel, error) {
+	if len(s.Channels) < 1 {
+		return db.Channel{}, db.NotFound
+	}
+	for _, channel := range s.Channels {
+		if channel.DefName == c {
+			return channel, nil
 		}
 	}
-	return nil
+	return db.Channel{}, db.NotFound
 }
 
-// HasRole checks if member m has a role with name n
-func HasRole(m *discordgo.Member, n string) bool {
-	for _, role := range m.Roles {
-		if role == n {
-			return true
+// GetServerChannelByID returns Channel with ID `c` from Server `s`
+func GetServerChannelByID(c string, s *db.Server) (db.Channel, error) {
+	if len(s.Channels) < 1 {
+		return db.Channel{}, db.NotFound
+	}
+	for _, channel := range s.Channels {
+		if channel.ID == c {
+			return channel, nil
 		}
 	}
-	return false
+	return db.Channel{}, db.NotFound
+}
+
+// CheckChannel evaluates Channel `c` against desired game channel options
+func CheckChannel(c *discordgo.Channel, g *discordgo.Guild) bool {
+	server, err := db.GetServer(g.ID)
+	if err != nil {
+		logger.Log.Error(err.Error())
+		return true
+	}
+	if c.ParentID != server.Category {
+		return false
+	}
+	return true
+}
+
+// GetConfigChannelByName returns ChannelConfig with default name `c` from the config
+func GetConfigChannelByName(c string) (config.ChannelConfig, error) {
+	conf := config.Get()
+	for _, channel := range conf.Channels {
+		if channel.Name == c {
+			return channel, nil
+		}
+	}
+	return config.ChannelConfig{}, db.NotFound
 }

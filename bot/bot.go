@@ -6,10 +6,8 @@ import (
 	"syscall"
 
 	"github.com/Noxdew/Knights-Of-Discord/config"
-	"github.com/Noxdew/Knights-Of-Discord/db"
 	"github.com/Noxdew/Knights-Of-Discord/handlers"
 	"github.com/Noxdew/Knights-Of-Discord/logger"
-
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -23,18 +21,13 @@ func Start() {
 		logger.Log.Panic(err)
 	}
 
-	// Flag all servers for integrity check
-	err = db.FlagServers(false)
-	if err != nil {
-		logger.Log.Panic(err)
-	}
-
 	// Add event handlers
 	s.AddHandler(handlers.ReadyHandler)
 	s.AddHandler(handlers.ServerJoinHandler)
 	s.AddHandler(handlers.ServerLeaveHandler)
 	s.AddHandler(handlers.RoleEditHandler)
 	s.AddHandler(handlers.RoleDeleteHandler)
+	s.AddHandler(handlers.ChannelEditHandler)
 	s.AddHandler(handlers.ChannelDeleteHandler)
 	s.AddHandler(handlers.MessageReceiveHandler)
 

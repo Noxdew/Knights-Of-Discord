@@ -17,6 +17,10 @@ type Definition struct {
 	Roles      []string        `json:"Roles"`
 	RolePerm   int             `json:"RolePerm"`
 	Channels   []ChannelConfig `json:"Channels"`
+	BotPerm    PermConfig      `json:"BotPerm"`
+	ActionPerm PermConfig      `json:"ActionPerm"`
+	SocialPerm PermConfig      `json:"SocialPerm"`
+	ClosedPerm PermConfig      `json:"ClosedPerm"`
 }
 
 // ChannelConfig defines config structure of a channel
@@ -24,6 +28,12 @@ type ChannelConfig struct {
 	Name string   `json:"name"`
 	Type string   `json:"type"`
 	Role []string `json:"role"`
+}
+
+// PermConfig defines config structure of a channel
+type PermConfig struct {
+	Allow int `json:"allow"`
+	Deny  int `json:"deny"`
 }
 
 // Config contains the configuration of this application

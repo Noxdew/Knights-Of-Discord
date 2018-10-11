@@ -1,0 +1,93 @@
+{
+	"Token": "-----------------",
+	"Prefix": "!kod-",
+	"DBUrl": "-----------------",
+	"DBUser": "-----------------",
+	"DBPassword": "-----------------",
+	"Roles": [
+		"KoD-Villager",
+		"KoD-Esquire",
+		"KoD-Knight"
+	],
+	"RolePerm": 330816,
+	"Channels": [
+		{
+			"name": "rules",
+			"type": "hub",
+			"role": []
+		},
+		{
+			"name": "announcements",
+			"type": "action",
+			"role": [
+				"KoD-Villager",
+				"KoD-Esquire",
+				"KoD-Knight"
+			]
+		},
+		{
+			"name": "outskirts",
+			"type": "action",
+			"role": [
+				"KoD-Villager",
+				"KoD-Esquire",
+				"KoD-Knight"
+			]
+		},
+		{
+			"name": "tavern",
+			"type": "social",
+			"role": [
+				"KoD-Villager",
+				"KoD-Esquire",
+				"KoD-Knight"
+			]
+		},
+		{
+			"name": "inner-city",
+			"type": "action",
+			"role": [
+				"KoD-Esquire",
+				"KoD-Knight"
+			]
+		},
+		{
+			"name": "inn",
+			"type": "social",
+			"role": [
+				"KoD-Esquire",
+				"KoD-Knight"
+			]
+		},
+		{
+			"name": "castle",
+			"type": "action",
+			"role": [
+				"KoD-Knight"
+			]
+		},
+		{
+			"name": "mead-hall",
+			"type": "social",
+			"role": [
+				"KoD-Knight"
+			]
+		}
+	],
+	"BotPerm": {
+		"allow": 871890257,
+		"deny": 0
+	},
+	"ActionPerm": {
+		"allow": 328768,
+		"deny": 871561489
+	},
+	"SocialPerm": {
+		"allow": 379968,
+		"deny": 871510289
+	},
+	"ClosedPerm": {
+		"allow": 0,
+		"deny": 871890257
+	}
+}

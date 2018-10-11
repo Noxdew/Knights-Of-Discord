@@ -5,7 +5,6 @@ import (
 
 	"github.com/Noxdew/Knights-Of-Discord/config"
 	"github.com/Noxdew/Knights-Of-Discord/logger"
-
 	"github.com/mongodb/mongo-go-driver/bson"
 	"github.com/mongodb/mongo-go-driver/mongo"
 )
@@ -26,15 +25,23 @@ type Server struct {
 
 // Role represents a Discord Role in the game
 type Role struct {
-	ID   string `json:"id" bson:"id"`
-	Type string `json:"type" bson:"type"`
+	ID      string `json:"id" bson:"id"`
+	DefName string `json:"defName" bson:"defName"`
 }
 
 // Channel represents a Discord Channel in the game
 type Channel struct {
-	ID   string `json:"id" bson:"id"`
-	Name string `json:"name" bson:"name"`
-	Type string `json:"type" bson:"type"`
+	ID      string `json:"id" bson:"id"`
+	DefName string `json:"defName" bson:"defName"`
+	Type    string `json:"type" bson:"type"`
+	Perms   []Perm `json:"perms" bson:"perms"`
+}
+
+// Perm represents a Discord PermissionOverwrite in the game
+type Perm struct {
+	ID    string `json:"id" bson:"id"`
+	Allow int    `json:"allow" bson:"allow"`
+	Deny  int    `json:"deny" bson:"deny"`
 }
 
 func connect() *mongo.Client {
@@ -61,7 +68,7 @@ func GetServer(s string) (*Server, error) {
 	return &server, err
 }
 
-// CreateServer uploads a new server to the DB
+// CreateServer uploads a new server `s` to the DB
 func CreateServer(s Server) error {
 	client := connect()
 	defer client.Disconnect(context.Background())
@@ -70,7 +77,7 @@ func CreateServer(s Server) error {
 	return err
 }
 
-// RemoveServer removes a server from the DB
+// RemoveServer removes server with ID `s` from the DB
 func RemoveServer(s string) error {
 	client := connect()
 	defer client.Disconnect(context.Background())
@@ -80,19 +87,19 @@ func RemoveServer(s string) error {
 	return err
 }
 
-// FlagServers changes the `checked` value of all DB servers to `b`
-func FlagServers(b bool) error {
+// UpdateServerChecked changes the `checked` value of server with ID `s` to `b`
+func UpdateServerChecked(s string, b bool) error {
 	client := connect()
 	defer client.Disconnect(context.Background())
 	collection := client.Database("knights-of-discord").Collection("servers")
-	filter := bson.NewDocument()
+	filter := bson.NewDocument(bson.EC.String("id", s))
 	replacement := bson.NewDocument(bson.EC.SubDocumentFromElements("$set", bson.EC.Boolean("checked", b)))
 	_, err := collection.UpdateMany(context.Background(), filter, replacement)
 	return err
 }
 
-// UpdateServerStatus changes the `playing` value for server `s` to `b`
-func UpdateServerStatus(s string, b bool) error {
+// UpdateServerPlaying changes the `playing` value for server with ID `s` to `b`
+func UpdateServerPlaying(s string, b bool) error {
 	client := connect()
 	defer client.Disconnect(context.Background())
 	collection := client.Database("knights-of-discord").Collection("servers")
@@ -118,7 +125,7 @@ func UpdateRole(r Role, s string) error {
 	client := connect()
 	defer client.Disconnect(context.Background())
 	collection := client.Database("knights-of-discord").Collection("servers")
-	filter := bson.NewDocument(bson.EC.String("id", s), bson.EC.String("roles.type", r.Type))
+	filter := bson.NewDocument(bson.EC.String("id", s), bson.EC.String("roles.defName", r.DefName))
 	replacement := bson.NewDocument(bson.EC.SubDocumentFromElements("$set", bson.EC.Interface("roles.$.id", r.ID)))
 	_, err := collection.UpdateOne(context.Background(), filter, replacement)
 	return err
@@ -151,7 +158,7 @@ func UpdateChannel(c Channel, s string) error {
 	client := connect()
 	defer client.Disconnect(context.Background())
 	collection := client.Database("knights-of-discord").Collection("servers")
-	filter := bson.NewDocument(bson.EC.String("id", s), bson.EC.String("channels.name", c.Name))
+	filter := bson.NewDocument(bson.EC.String("id", s), bson.EC.String("channels.defName", c.DefName))
 	replacement := bson.NewDocument(bson.EC.SubDocumentFromElements("$set", bson.EC.Interface("channels.$.id", c.ID)))
 	_, err := collection.UpdateOne(context.Background(), filter, replacement)
 	return err
