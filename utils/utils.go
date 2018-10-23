@@ -30,6 +30,26 @@ func GetServerRoleByID(r string, s *db.Server) (db.Role, error) {
 	return db.Role{}, db.NotFound
 }
 
+// GetDiscordRoleByName returns a Role with name `r` from guild `g`
+func GetDiscordRoleByName(r string, g *discordgo.Guild) (*discordgo.Role, error) {
+	for _, role := range g.Roles {
+		if role.Name == r {
+			return role, nil
+		}
+	}
+	return nil, db.NotFound
+}
+
+// GetChannelRoleByName returns a Role with name `r` from Server Channel `c`
+func GetChannelRoleByName(r string, c db.Channel) (string, error) {
+	for _, role := range c.Roles {
+		if role == r {
+			return role, nil
+		}
+	}
+	return "", db.NotFound
+}
+
 // CheckRole evaluates Role `r` against desired game role options
 func CheckRole(r *discordgo.Role) bool {
 	if !r.Mentionable || r.Permissions != config.Get().RolePerm {
@@ -86,4 +106,49 @@ func GetConfigChannelByName(c string) (config.ChannelConfig, error) {
 		}
 	}
 	return config.ChannelConfig{}, db.NotFound
+}
+
+// GetChannelPermByID returns Permission with ID `p` in chanel `c`
+func GetChannelPermByID(p string, c db.Channel) (db.Perm, error) {
+	for _, perm := range c.Perms {
+		if perm.ID == p {
+			return perm, nil
+		}
+	}
+	return db.Perm{}, db.NotFound
+}
+
+// CheckPermNeeded evaluates if a permission `p` is required for the game
+func CheckPermNeeded(p *discordgo.PermissionOverwrite, channel db.Channel) bool {
+	if p.ID == "487744442531315712" {
+		return true
+	}
+	_, err := GetChannelPermByID(p.ID, channel)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+// CheckPerm evaluates PermissionOverwrite `p` against desired game perm options
+func CheckPerm(p *discordgo.PermissionOverwrite, c db.Channel) bool {
+	perm, err := GetChannelPermByID(p.ID, c)
+	if err != nil {
+		logger.Log.Error(err.Error())
+		return true
+	}
+	if perm.Allow != p.Allow {
+		return false
+	}
+	return true
+}
+
+// CheckPermExists evaluates if Server Perm `p` exists in Discord Channel `c`
+func CheckPermExists(p db.Perm, c *discordgo.Channel) bool {
+	for _, perm := range c.PermissionOverwrites {
+		if perm.ID == p.ID {
+			return true
+		}
+	}
+	return false
 }

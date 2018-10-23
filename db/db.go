@@ -31,15 +31,17 @@ type Role struct {
 
 // Channel represents a Discord Channel in the game
 type Channel struct {
-	ID      string `json:"id" bson:"id"`
-	DefName string `json:"defName" bson:"defName"`
-	Type    string `json:"type" bson:"type"`
-	Perms   []Perm `json:"perms" bson:"perms"`
+	ID      string   `json:"id" bson:"id"`
+	DefName string   `json:"defName" bson:"defName"`
+	Type    string   `json:"type" bson:"type"`
+	Roles   []string `json:"roles" bson:"roles"`
+	Perms   []Perm   `json:"perms" bson:"perms"`
 }
 
 // Perm represents a Discord PermissionOverwrite in the game
 type Perm struct {
 	ID    string `json:"id" bson:"id"`
+	Type  string `json:"type" bson:"type"`
 	Allow int    `json:"allow" bson:"allow"`
 	Deny  int    `json:"deny" bson:"deny"`
 }
@@ -160,6 +162,17 @@ func UpdateChannel(c Channel, s string) error {
 	collection := client.Database("knights-of-discord").Collection("servers")
 	filter := bson.NewDocument(bson.EC.String("id", s), bson.EC.String("channels.defName", c.DefName))
 	replacement := bson.NewDocument(bson.EC.SubDocumentFromElements("$set", bson.EC.Interface("channels.$.id", c.ID)))
+	_, err := collection.UpdateOne(context.Background(), filter, replacement)
+	return err
+}
+
+// CreatePermission uploads a new permission `p` to channel `c` in server `s`
+func CreatePermission(p Perm, c Channel, s string) error {
+	client := connect()
+	defer client.Disconnect(context.Background())
+	collection := client.Database("knights-of-discord").Collection("servers")
+	filter := bson.NewDocument(bson.EC.String("id", s), bson.EC.String("channels.id", c.ID))
+	replacement := bson.NewDocument(bson.EC.SubDocumentFromElements("$push", bson.EC.Interface("channels.$.perms", p)))
 	_, err := collection.UpdateOne(context.Background(), filter, replacement)
 	return err
 }

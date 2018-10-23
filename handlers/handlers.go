@@ -98,12 +98,32 @@ func ChannelEditHandler(s *discordgo.Session, c *discordgo.ChannelUpdate) {
 		logger.Log.Error(err.Error())
 		return
 	}
-	_, err = utils.GetServerChannelByID(c.Channel.ID, server)
+	channel, err := utils.GetServerChannelByID(c.Channel.ID, server)
 	if err != nil {
 		return
 	}
 	if !utils.CheckChannel(c.Channel, g) {
 		builder.FixChannel(s, g, c.Channel)
+	}
+	for _, perm := range c.PermissionOverwrites {
+		needed := utils.CheckPermNeeded(perm, channel)
+		if !needed {
+			builder.RemovePerm(s, c.Channel.ID, perm)
+		} else {
+			if !utils.CheckPerm(perm, channel) {
+				p, err := utils.GetChannelPermByID(perm.ID, channel)
+				if err != nil {
+					logger.Log.Error(err.Error())
+					continue
+				}
+				builder.FixPerm(s, c.Channel.ID, p)
+			}
+		}
+	}
+	for _, perm := range channel.Perms {
+		if !utils.CheckPermExists(perm, c.Channel) {
+			s.ChannelPermissionSet(c.Channel.ID, perm.ID, perm.Type, perm.Allow, perm.Deny)
+		}
 	}
 }
 

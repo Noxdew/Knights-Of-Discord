@@ -14,7 +14,7 @@ func BuildServer(s *discordgo.Session, g *discordgo.Guild) {
 	err := db.CreateServer(db.Server{
 		ID:       g.ID,
 		Checked:  true,
-		Playing:  true,
+		Playing:  false,
 		Roles:    []db.Role{},
 		Category: "",
 		Channels: []db.Channel{},
@@ -26,6 +26,7 @@ func BuildServer(s *discordgo.Session, g *discordgo.Guild) {
 	BuildRoles(s, g)
 	BuildCategory(s, g)
 	BuildChannels(s, g)
+	db.UpdateServerPlaying(g.ID, true)
 	logger.Log.Info("Server %s (%s) successfully built.", g.Name, g.ID)
 }
 
@@ -231,6 +232,7 @@ func BuildChannel(s *discordgo.Session, g *discordgo.Guild, channel config.Chann
 			ID:      c.ID,
 			DefName: channel.Name,
 			Type:    channel.Type,
+			Roles:   channel.Role,
 			Perms:   []db.Perm{},
 		}, g.ID)
 		if err != nil {
@@ -246,7 +248,7 @@ func BuildChannel(s *discordgo.Session, g *discordgo.Guild, channel config.Chann
 		}
 	}
 	// Add Permissions
-	// TODO
+	BuildPerms(s, g, c, channel)
 }
 
 // FixChannel rebuilds Discord game channel to desired options
@@ -260,6 +262,105 @@ func FixChannel(s *discordgo.Session, g *discordgo.Guild, c *discordgo.Channel) 
 	_, err = s.ChannelEditComplex(c.ID, &discordgo.ChannelEdit{
 		ParentID: server.Category,
 	})
+	if err != nil {
+		logger.Log.Error(err.Error())
+	}
+}
+
+// BuildPerms creates new PermissionOverwrites for channel `c`
+func BuildPerms(s *discordgo.Session, g *discordgo.Guild, c *discordgo.Channel, channelConf config.ChannelConfig) {
+	conf := config.Get()
+	// Set Bot Permission
+	err := s.ChannelPermissionSet(c.ID, "487744442531315712", "member", conf.BotPerm.Allow, conf.BotPerm.Deny)
+	if err != nil {
+		logger.Log.Error(err.Error())
+		return
+	}
+	// Set Everyone Permission
+	everyone, err := utils.GetDiscordRoleByName("@everyone", g)
+	if err != nil {
+		logger.Log.Error(err.Error())
+		return
+	}
+	if channelConf.Type == "hub" {
+		err = s.ChannelPermissionSet(c.ID, everyone.ID, "role", conf.ActionPerm.Allow, conf.ActionPerm.Deny)
+		if err != nil {
+			logger.Log.Error(err.Error())
+			return
+		}
+	} else {
+		err = s.ChannelPermissionSet(c.ID, everyone.ID, "role", conf.ClosedPerm.Allow, conf.ClosedPerm.Deny)
+		if err != nil {
+			logger.Log.Error(err.Error())
+			return
+		}
+	}
+	// Set Game Permissions
+	server, err := db.GetServer(g.ID)
+	if err != nil {
+		logger.Log.Error(err.Error())
+		return
+	}
+	channel, err := utils.GetServerChannelByID(c.ID, server)
+	if err != nil {
+		logger.Log.Error(err.Error())
+		return
+	}
+	if channelConf.Type == "action" {
+		for _, role := range server.Roles {
+			_, err := utils.GetChannelRoleByName(role.DefName, channel)
+			if err != nil {
+				continue
+			}
+			err = s.ChannelPermissionSet(c.ID, role.ID, "role", conf.ActionPerm.Allow, conf.ActionPerm.Deny)
+			if err != nil {
+				logger.Log.Error(err.Error())
+				return
+			}
+		}
+	} else if channelConf.Type == "social" {
+		for _, role := range server.Roles {
+			_, err := utils.GetChannelRoleByName(role.DefName, channel)
+			if err != nil {
+				continue
+			}
+			err = s.ChannelPermissionSet(c.ID, role.ID, "role", conf.SocialPerm.Allow, conf.SocialPerm.Deny)
+			if err != nil {
+				logger.Log.Error(err.Error())
+				return
+			}
+		}
+	}
+	// Upload Perms to DB
+	c, err = s.Channel(c.ID)
+	if err != nil {
+		logger.Log.Error(err.Error())
+		return
+	}
+	for _, perm := range c.PermissionOverwrites {
+		err := db.CreatePermission(db.Perm{
+			ID:    perm.ID,
+			Type:  perm.Type,
+			Allow: perm.Allow,
+			Deny:  perm.Deny,
+		}, channel, g.ID)
+		if err != nil {
+			logger.Log.Error(err.Error())
+		}
+	}
+}
+
+// FixPerm rebuilds Discord PermissionOverwrite to desired options
+func FixPerm(s *discordgo.Session, c string, p db.Perm) {
+	err := s.ChannelPermissionSet(c, p.ID, p.Type, p.Allow, p.Deny)
+	if err != nil {
+		logger.Log.Error(err.Error())
+	}
+}
+
+// RemovePerm destroys a Discord PermissionOverwrite
+func RemovePerm(s *discordgo.Session, c string, p *discordgo.PermissionOverwrite) {
+	err := s.ChannelPermissionDelete(c, p.ID)
 	if err != nil {
 		logger.Log.Error(err.Error())
 	}
