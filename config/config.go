@@ -9,31 +9,11 @@ import (
 
 // Definition defines the structure of a config for this application
 type Definition struct {
-	Token      string          `json:"Token"`
-	Prefix     string          `json:"Prefix"`
-	DBUrl      string          `json:"DBUrl"`
-	DBUser     string          `json:"DBUser"`
-	DBPassword string          `json:"DBPassword"`
-	Roles      []string        `json:"Roles"`
-	RolePerm   int             `json:"RolePerm"`
-	Channels   []ChannelConfig `json:"Channels"`
-	BotPerm    PermConfig      `json:"BotPerm"`
-	ActionPerm PermConfig      `json:"ActionPerm"`
-	SocialPerm PermConfig      `json:"SocialPerm"`
-	ClosedPerm PermConfig      `json:"ClosedPerm"`
-}
-
-// ChannelConfig defines config structure of a channel
-type ChannelConfig struct {
-	Name string   `json:"name"`
-	Type string   `json:"type"`
-	Role []string `json:"role"`
-}
-
-// PermConfig defines config structure of a channel
-type PermConfig struct {
-	Allow int `json:"allow"`
-	Deny  int `json:"deny"`
+	Token      string `json:"Token"`
+	Prefix     string `json:"Prefix"`
+	DBUrl      string `json:"DBUrl"`
+	DBUser     string `json:"DBUser"`
+	DBPassword string `json:"DBPassword"`
 }
 
 // Config contains the configuration of this application

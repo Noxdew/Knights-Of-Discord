@@ -23,7 +23,7 @@ Note that adding the bot requires allowing the following permissions:
 
 The project is work in progress.
 
-The current step if building and maintaining the game environment in all servers the Bot is present.
+We are currently working on setting up the game environment and ensuring its integrity.
 
 ## Contributing
 1. Fork this repository

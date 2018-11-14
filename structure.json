@@ -1,0 +1,113 @@
+{
+    "playing": false,
+    "power": 0,
+    "roles": {
+        "villager": {
+            "defName": "KoD-Villager",
+            "permission": 330816,
+            "level": 0
+        },
+        "esquire": {
+            "defName": "KoD-Esquire",
+            "permission": 330816,
+            "level": 1
+        },
+        "knight": {
+            "defName": "KoD-Knight",
+            "permission": 330816,
+            "level": 2
+        },
+        "everyone": {
+            "defName": "everyone",
+            "level": -1
+        }
+    },
+    "category": {
+        "defName": "Knights of Discord"
+    },
+    "botPerm": 871890257,
+    "channels": {
+        "rules": {
+            "defName": "rules",
+            "level": -1,
+            "allow": 328768,
+            "deny": 871561489,
+            "messages": {
+                "rules": {
+                    "title": "Knights of Discord",
+                    "description": "Welcome to the Discord-based Economy RPG game Knights of Discord!\nFollow the project's progress [here](https://github.com/Noxdew/Knights-Of-Discord)",
+                    "color": 8311585,
+                    "icon": "https://cdn.discordapp.com/attachments/512302843437252611/512302951814004752/ac6918be09a389876ee5663d6b08b55a.png",
+                    "fields": [
+                        {
+                            "title": "Rules",
+                            "value": "TODO RULES"
+                        }
+                    ]
+                }
+            }
+        },
+        "announcements": {
+            "defName": "announcements",
+            "level": 0,
+            "allow": 328768,
+		    "deny": 871561489
+        },
+        "outskirts": {
+            "defName": "outskirts",
+            "level": 0,
+            "allow": 328768,
+            "deny": 871561489,
+            "messages": {
+                "farm": {
+                    "title": "Farm",
+                    "description": "Gather wheat for your server.",
+                    "color": 6711705,
+                    "icon": "https://cdn.discordapp.com/attachments/512302843437252611/512304492616613888/wheat.png"
+                },
+                "woods": {
+                    "title": "Forest",
+                    "description": "Gather wood for your server.",
+                    "color": 6711705,
+                    "icon": "https://cdn.discordapp.com/attachments/512302843437252611/512304777707651082/trees.png"
+                },
+                "quary": {
+                    "title": "Quary",
+                    "description": "Gather stone for your server.",
+                    "color": 6711705,
+                    "icon": "https://cdn.discordapp.com/attachments/512302843437252611/512305511602061312/mining.png"
+                }
+            }
+        },
+        "tavern": {
+            "defName": "tavern",
+            "level": 0,
+            "allow": 379968,
+            "deny": 871510289
+        },
+        "innerCity": {
+            "defName": "inner-city",
+            "level": 1,
+            "allow": 328768,
+		    "deny": 871561489
+        },
+        "inn": {
+            "defName": "inn",
+            "level": 1,
+            "allow": 379968,
+            "deny": 871510289
+        },
+        "castle": {
+            "defName": "castle",
+            "level": 2,
+            "allow": 328768,
+		    "deny": 871561489
+        },
+        "meadHall": {
+            "defName": "mead-hall",
+            "level": 2,
+            "allow": 379968,
+            "deny": 871510289
+        }
+    }
+}
