@@ -35,7 +35,7 @@
             "messages": {
                 "rules": {
                     "title": "Knights of Discord",
-                    "description": "Welcome to the Discord-based Economy RPG game Knights of Discord!\nFollow the project's progress [here](https://github.com/Noxdew/Knights-Of-Discord)",
+                    "description": "------------------------------------------------------------------------------\nWelcome to the Discord-based Economy RPG game\n**Knights of Discord!**\nFollow the project's progress [here](https://github.com/Noxdew/Knights-Of-Discord)",
                     "color": 8311585,
                     "icon": "https://cdn.discordapp.com/attachments/512302843437252611/512302951814004752/ac6918be09a389876ee5663d6b08b55a.png",
                     "fields": [
@@ -60,22 +60,28 @@
             "deny": 871561489,
             "messages": {
                 "farm": {
-                    "title": "Farm",
-                    "description": "Gather wheat for your server.",
+                    "title": "Wheat Farm",
+                    "description": "------------------------------------------------------------------------------\nSpend time working at the Wheat Farm to gather <:wheat:512362286208516106> wheat for your server.",
                     "color": 6711705,
-                    "icon": "https://cdn.discordapp.com/attachments/512302843437252611/512304492616613888/wheat.png"
+                    "icon": "https://cdn.discordapp.com/attachments/512302843437252611/512358651059503132/Farm_Level_1.png"
                 },
                 "woods": {
-                    "title": "Forest",
-                    "description": "Gather wood for your server.",
+                    "title": "Forester Lodge",
+                    "description": "------------------------------------------------------------------------------\nSpend time working at the Forester Lodge to gather <:wood:512362285092700163> wood for your server.",
                     "color": 6711705,
-                    "icon": "https://cdn.discordapp.com/attachments/512302843437252611/512304777707651082/trees.png"
+                    "icon": "https://cdn.discordapp.com/attachments/512302843437252611/512358662325403677/Pinewood_Cutter_Level_1.png"
                 },
                 "quary": {
-                    "title": "Quary",
-                    "description": "Gather stone for your server.",
+                    "title": "Stone Quary",
+                    "description": "------------------------------------------------------------------------------\nSpend time working at the Stone Quary to gather <:stone:512362285113671712> stone for your server.",
                     "color": 6711705,
-                    "icon": "https://cdn.discordapp.com/attachments/512302843437252611/512305511602061312/mining.png"
+                    "icon": "https://cdn.discordapp.com/attachments/512302843437252611/512358660924506112/Mason_Level_1.png"
+                },
+                "builder": {
+                    "title": "Builder's Hall",
+                    "description": "------------------------------------------------------------------------------\nBuild up and upgrade your server to automate resource gathering.",
+                    "color": 6711705,
+                    "icon": "https://cdn.discordapp.com/attachments/512302843437252611/512358665819521034/Storehouse_Level_1.png"
                 }
             }
         },

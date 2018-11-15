@@ -55,12 +55,20 @@ type Channels struct {
 
 // Channel contains game information for a Discord Channel
 type Channel struct {
-	ID       string   `json:"id" bson:"id"`
-	DefName  string   `json:"defName" bson:"defName"`
-	Level    int      `json:"level" bson:"level"`
-	Allow    int      `json:"allow" bson:"allow"`
-	Deny     int      `json:"deny" bson:"deny"`
-	Messages Messages `json:"messages" bson:"messages"`
+	ID          string   `json:"id" bson:"id"`
+	DefName     string   `json:"defName" bson:"defName"`
+	Level       int      `json:"level" bson:"level"`
+	Allow       int      `json:"allow" bson:"allow"`
+	Deny        int      `json:"deny" bson:"deny"`
+	Permissions []Perm   `json:"perms" bson:"perms"`
+	Messages    Messages `json:"messages" bson:"messages"`
+}
+
+// Perm conatins game information for a Discord PermissionOverwrite
+type Perm struct {
+	Role  string `json:"role" bson:"role"`
+	Allow int    `json:"allow" bson:"allow"`
+	Deny  int    `json:"deny" bson:"deny"`
 }
 
 // Messages contains game Messages
