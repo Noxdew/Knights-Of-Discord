@@ -19,7 +19,7 @@ func BuildServer(server *structure.Server, s *discordgo.Session, g *discordgo.Gu
 	buildCategory(server, s, g)
 	buildChannels(server, s, g)
 	buildPermissions(server, s, g)
-	// buildMessages(server, s, g)
+	buildMessages(server, s, g)
 
 	// Upload to DB
 	err := db.CreateServer(server)
@@ -243,39 +243,82 @@ func buildPermissions(server *structure.Server, s *discordgo.Session, g *discord
 		}
 	}
 
+	// Set Message Channels
+	server.SetMessageChannel()
+
 	logger.Log.Info("Permissions for server %s (%s) successfully built.", g.Name, g.ID)
 }
 
-// func buildMessages() {
-// 	// Send Messages
-// 	for _, message := range c.Messages.GetMessages() {
-// 		embed := discordgo.MessageEmbed{
-// 			Title:       message.Title,
-// 			Description: message.Description,
-// 			Color:       message.Color,
-// 			Footer: &discordgo.MessageEmbedFooter{
-// 				Text: "Knights of Discord",
-// 			},
-// 			Author: &discordgo.MessageEmbedAuthor{
-// 				Name:    bot.Username,
-// 				IconURL: bot.AvatarURL("32"),
-// 			},
-// 		}
-// 		for _, field := range message.Fields {
-// 			embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{
-// 				Name:  field.Title,
-// 				Value: field.Value,
-// 			})
-// 		}
-// 		if message.Icon != "" {
-// 			embed.Thumbnail = &discordgo.MessageEmbedThumbnail{
-// 				URL: message.Icon,
-// 			}
-// 		}
-// 		_, err := s.ChannelMessageSendEmbed(c.ID, &embed)
-// 		if err != nil {
-// 			logger.Log.Error(err.Error())
-// 			return
-// 		}
-// 	}
-// }
+func buildMessages(server *structure.Server, s *discordgo.Session, g *discordgo.Guild) {
+	logger.Log.Info("Building Messages for Guild %s (id: %s)...", g.Name, g.ID)
+
+	// Send Messages
+	for _, message := range server.Messages.GetMessages() {
+		// Create embed
+		embed := buildEmbed(message)
+
+		// Send Message
+		m, err := s.ChannelMessageSendEmbed(message.Channel, embed)
+		if err != nil {
+			logger.Log.Error(err.Error())
+			return
+		}
+
+		// Update Message object
+		message.ID = m.ID
+
+		// Add reactions
+		buildReactions(message, s, g)
+	}
+
+	logger.Log.Info("Messages for server %s (%s) successfully built.", g.Name, g.ID)
+}
+
+func buildEmbed(m *structure.Message) *discordgo.MessageEmbed {
+	embed := discordgo.MessageEmbed{
+		Title:       m.Title,
+		Description: m.Description,
+		Thumbnail: &discordgo.MessageEmbedThumbnail{
+			URL: m.Icon,
+		},
+		Footer: &discordgo.MessageEmbedFooter{
+			IconURL: "https://cdn.discordapp.com/attachments/512302843437252611/512302951814004752/ac6918be09a389876ee5663d6b08b55a.png",
+			Text:    m.Footer,
+		},
+	}
+
+	// Set Color
+	if m.Type == "info" {
+		embed.Color = 16098851
+	} else if m.Type == "card" {
+		embed.Color = 6711705
+	} else if m.Type == "active" {
+		embed.Color = 8311585
+	} else if m.Type == "danger" {
+		embed.Color = 13632027
+	} else if m.Type == "shop" {
+		embed.Color = 12390624
+	} else {
+		embed.Color = 4868682
+	}
+
+	// Set Fields
+	for _, field := range m.Fields {
+		embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{
+			Name:   field.Title,
+			Value:  field.Value,
+			Inline: field.Inline,
+		})
+	}
+
+	return &embed
+}
+
+func buildReactions(message *structure.Message, s *discordgo.Session, g *discordgo.Guild) {
+	if message.Type == "info" {
+		err := s.MessageReactionAdd(message.Channel, message.ID, ":kod:514099648949125153")
+		if err != nil {
+			logger.Log.Error(err.Error())
+		}
+	}
+}

@@ -31,21 +31,7 @@
             "defName": "rules",
             "level": -1,
             "allow": 328768,
-            "deny": 871561489,
-            "messages": {
-                "rules": {
-                    "title": "Knights of Discord",
-                    "description": "------------------------------------------------------------------------------\nWelcome to the Discord-based Economy RPG game\n**Knights of Discord!**\nFollow the project's progress [here](https://github.com/Noxdew/Knights-Of-Discord)",
-                    "color": 8311585,
-                    "icon": "https://cdn.discordapp.com/attachments/512302843437252611/512302951814004752/ac6918be09a389876ee5663d6b08b55a.png",
-                    "fields": [
-                        {
-                            "title": "Rules",
-                            "value": "TODO RULES"
-                        }
-                    ]
-                }
-            }
+            "deny": 871561489
         },
         "announcements": {
             "defName": "announcements",
@@ -57,33 +43,7 @@
             "defName": "outskirts",
             "level": 0,
             "allow": 328768,
-            "deny": 871561489,
-            "messages": {
-                "farm": {
-                    "title": "Wheat Farm",
-                    "description": "------------------------------------------------------------------------------\nSpend time working at the Wheat Farm to gather <:wheat:512362286208516106> wheat for your server.",
-                    "color": 6711705,
-                    "icon": "https://cdn.discordapp.com/attachments/512302843437252611/512358651059503132/Farm_Level_1.png"
-                },
-                "woods": {
-                    "title": "Forester Lodge",
-                    "description": "------------------------------------------------------------------------------\nSpend time working at the Forester Lodge to gather <:wood:512362285092700163> wood for your server.",
-                    "color": 6711705,
-                    "icon": "https://cdn.discordapp.com/attachments/512302843437252611/512358662325403677/Pinewood_Cutter_Level_1.png"
-                },
-                "quary": {
-                    "title": "Stone Quary",
-                    "description": "------------------------------------------------------------------------------\nSpend time working at the Stone Quary to gather <:stone:512362285113671712> stone for your server.",
-                    "color": 6711705,
-                    "icon": "https://cdn.discordapp.com/attachments/512302843437252611/512358660924506112/Mason_Level_1.png"
-                },
-                "builder": {
-                    "title": "Builder's Hall",
-                    "description": "------------------------------------------------------------------------------\nBuild up and upgrade your server to automate resource gathering.",
-                    "color": 6711705,
-                    "icon": "https://cdn.discordapp.com/attachments/512302843437252611/512358665819521034/Storehouse_Level_1.png"
-                }
-            }
+            "deny": 871561489
         },
         "tavern": {
             "defName": "tavern",
@@ -114,6 +74,89 @@
             "level": 2,
             "allow": 379968,
             "deny": 871510289
+        }
+    },
+    "messages": {
+        "rules": {
+            "type": "info",
+            "title": "**Welcome to Knights of Discord!**",
+            "description": "A Discord bot used to bring life to your servers through an RPG / Economy styled in-chat game.",
+            "icon": "https://cdn.discordapp.com/attachments/512302843437252611/512302951814004752/ac6918be09a389876ee5663d6b08b55a.png",
+            "footer": "Welcome message and rules",
+            "fields": [
+                {
+                    "title": "Rules:",
+                    "value": "TODO RULES",
+                    "fInline": false
+                },
+                {
+                    "title": "How to Play:",
+                    "value": "TODO TUTORIAL",
+                    "fInline": false
+                },
+                {
+                    "title": "Project Information:",
+                    "value": "TODO PI",
+                    "fInline": false
+                }
+            ]
+        },
+        "farm": {
+            "type": "card",
+            "title": "**Wheat Farm**",
+            "description": "Spend time to work at the Wheat Farm to gather <:wheat:512362286208516106> wheat for your Server.",
+            "icon": "https://cdn.discordapp.com/attachments/512302843437252611/512358651059503132/Farm_Level_1.png",
+            "footer": "Wheat Farm action card",
+            "fields": [
+                {
+                    "title": "Building Level:",
+                    "value": "2",
+                    "fInline": true
+                },
+                {
+                    "title": "Current Production:",
+                    "value": "<:wheat:512362286208516106> 20",
+                    "fInline": true
+                },
+                {
+                    "title": "`Person` is working at the Farm",
+                    "value": "<:prog_s_f:513000280565088272><:prog_m_f:513000280368087040><:prog_m_f:513000280368087040><:prog_m_f:513000280368087040><:prog_m_f:513000280368087040><:prog_m_f:513000280368087040><:prog_m_e:513000280355373059><:prog_m_e:513000280355373059><:prog_m_e:513000280355373059><:prog_m_e:513000280355373059><:prog_m_e:513000280355373059><:prog_e_e:513000279898062851> 30/60 min",
+                    "fInline": false
+                },
+                {
+                    "title": "`Person` is working at the Farm",
+                    "value": "<:prog_s_f:513000280565088272><:prog_m_f:513000280368087040><:prog_m_f:513000280368087040><:prog_m_e:513000280355373059><:prog_m_e:513000280355373059><:prog_m_e:513000280355373059><:prog_m_e:513000280355373059><:prog_m_e:513000280355373059><:prog_m_e:513000280355373059><:prog_m_e:513000280355373059><:prog_m_e:513000280355373059><:prog_e_e:513000279898062851> 15/60 min",
+                    "fInline": false
+                }
+            ]
+        },
+        "woods": {
+            "type": "card",
+            "title": "**Forester Camp**",
+            "description": "Spend time to work at the Forester Camp to gather <:wood:512362285092700163> wood for your Server.",
+            "icon": "https://cdn.discordapp.com/attachments/512302843437252611/512358662325403677/Pinewood_Cutter_Level_1.png",
+            "footer": "Forester Camp action card"
+        },
+        "quary": {
+            "type": "card",
+            "title": "**Stone Mason**",
+            "description": "Spend time to work at the Stone Mason to gather <:stone:512362285113671712> stone for your Server.",
+            "icon": "https://cdn.discordapp.com/attachments/512302843437252611/512358660924506112/Mason_Level_1.png",
+            "footer": "Stone Mason action card"
+        },
+        "builder": {
+            "type": "shop",
+            "title": "**Builder's Hall**",
+            "description": "Spend time and resources to upgrade Server buildings. The higher the building level, the more resources it produces for the Server.",
+            "icon": "https://cdn.discordapp.com/attachments/512302843437252611/512358665819521034/Storehouse_Level_1.png",
+            "footer": "Builder's Hall action card",
+            "fields": [
+                {
+                    "title": "Wheat Farm",
+                    "value": "Current Level: <:level:512999766330834964> 2\nStorage: <:wheat:512362286208516106> 150\nUpgrade Cost:<:stone:512362285113671712> 100 <:wood:512362285092700163> 100\nUpgrade Building: <:wheatup:512968723259195394>",
+                    "fInline": false
+                }
+            ]
         }
     }
 }

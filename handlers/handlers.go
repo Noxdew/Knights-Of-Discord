@@ -56,3 +56,87 @@ func MessageReceiveHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 }
+
+// ReactionAddHandler function called when a reaction is sent
+func ReactionAddHandler(s *discordgo.Session, r *discordgo.MessageReactionAdd) {
+	// Check author for bot
+	u, err := s.User(r.UserID)
+	if err != nil {
+		logger.Log.Error(err.Error())
+		return
+	}
+	if u.Bot {
+		return
+	}
+
+	// Fetch server object
+	c, err := s.Channel(r.ChannelID)
+	if err != nil {
+		logger.Log.Error(err.Error())
+		return
+	}
+	g, err := s.Guild(c.GuildID)
+	if err != nil {
+		logger.Log.Error(err.Error())
+		return
+	}
+	server, err := db.GetServer(g)
+	if err != nil && err != db.NotFound {
+		logger.Log.Error(err.Error())
+		return
+	}
+
+	// Call reaction command
+	if server.Messages.Rules.ID == r.MessageID {
+		if r.Emoji.ID == "514099648949125153" {
+			response := "User " + u.Username + " joining game!"
+			_, err := s.ChannelMessageSend(r.ChannelID, response)
+			if err != nil {
+				logger.Log.Error(err.Error())
+				return
+			}
+		}
+	}
+}
+
+// ReactionRemoveHandler function called when a reaction is sent
+func ReactionRemoveHandler(s *discordgo.Session, r *discordgo.MessageReactionRemove) {
+	// Check author for bot
+	u, err := s.User(r.UserID)
+	if err != nil {
+		logger.Log.Error(err.Error())
+		return
+	}
+	if u.Bot {
+		return
+	}
+
+	// Fetch server object
+	c, err := s.Channel(r.ChannelID)
+	if err != nil {
+		logger.Log.Error(err.Error())
+		return
+	}
+	g, err := s.Guild(c.GuildID)
+	if err != nil {
+		logger.Log.Error(err.Error())
+		return
+	}
+	server, err := db.GetServer(g)
+	if err != nil && err != db.NotFound {
+		logger.Log.Error(err.Error())
+		return
+	}
+
+	// Call reaction command
+	if server.Messages.Rules.ID == r.MessageID {
+		if r.Emoji.ID == "514099648949125153" {
+			response := "User " + u.Username + " leaving game game!"
+			_, err := s.ChannelMessageSend(r.ChannelID, response)
+			if err != nil {
+				logger.Log.Error(err.Error())
+				return
+			}
+		}
+	}
+}

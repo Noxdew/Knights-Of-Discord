@@ -17,6 +17,7 @@ type Server struct {
 	Category Category `json:"category" bson:"category"`
 	BotPerm  int      `json:"botPerm" bson:"botPerm"`
 	Channels Channels `json:"channels" bson:"channels"`
+	Messages Messages `json:"messages" bson:"messages"`
 }
 
 // Roles contains game Roles
@@ -55,13 +56,12 @@ type Channels struct {
 
 // Channel contains game information for a Discord Channel
 type Channel struct {
-	ID          string   `json:"id" bson:"id"`
-	DefName     string   `json:"defName" bson:"defName"`
-	Level       int      `json:"level" bson:"level"`
-	Allow       int      `json:"allow" bson:"allow"`
-	Deny        int      `json:"deny" bson:"deny"`
-	Permissions []Perm   `json:"perms" bson:"perms"`
-	Messages    Messages `json:"messages" bson:"messages"`
+	ID          string `json:"id" bson:"id"`
+	DefName     string `json:"defName" bson:"defName"`
+	Level       int    `json:"level" bson:"level"`
+	Allow       int    `json:"allow" bson:"allow"`
+	Deny        int    `json:"deny" bson:"deny"`
+	Permissions []Perm `json:"perms" bson:"perms"`
 }
 
 // Perm conatins game information for a Discord PermissionOverwrite
@@ -83,26 +83,21 @@ type Messages struct {
 // Message contains game information for a Discord Message
 type Message struct {
 	ID          string  `json:"id" bson:"id"`
+	Channel     string  `json:"channel" bson:"channel"`
 	Title       string  `json:"title" bson:"title"`
+	Type        string  `json:"type" bson:"type"`
 	Description string  `json:"description" bson:"description"`
 	Color       int     `json:"color" bson:"color"`
 	Icon        string  `json:"icon" bson:"icon"`
 	Footer      string  `json:"footer" bson:"footer"`
 	Fields      []Field `json:"fields" bson:"fields"`
-	Actions     Actions `json:"actions" bson:"actions"`
 }
 
 // Field contains game a Discord MessageEmbed Field
 type Field struct {
-	Title string `json:"title" bson:"title"`
-	Value string `json:"value" bson:"value"`
-}
-
-// Actions contains game Reactions
-type Actions struct {
-	Start       bool `json:"start" bson:"start"`
-	Stop        bool `json:"stop" bson:"stop"`
-	Participate bool `json:"participate" bson:"participate"`
+	Title  string `json:"title" bson:"title"`
+	Value  string `json:"value" bson:"value"`
+	Inline bool   `json:"fInline" bson:"fInline"`
 }
 
 // BuildServer creates a new Server object to store Discord Guild information
@@ -144,23 +139,22 @@ func (c *Channels) GetChannels() []*Channel {
 	return arr
 }
 
+// SetMessageChannel assigns a Channel ID to game Messages
+func (s *Server) SetMessageChannel() {
+	s.Messages.Rules.Channel = s.Channels.Rules.ID
+	s.Messages.Farm.Channel = s.Channels.Outskirts.ID
+	s.Messages.Woods.Channel = s.Channels.Outskirts.ID
+	s.Messages.Quary.Channel = s.Channels.Outskirts.ID
+	s.Messages.Builder.Channel = s.Channels.Outskirts.ID
+}
+
 // GetMessages returns all game Messages as a slice
 func (m *Messages) GetMessages() []*Message {
 	var arr []*Message
-	if m.Rules.Title != "" {
-		arr = append(arr, &m.Rules)
-	}
-	if m.Farm.Title != "" {
-		arr = append(arr, &m.Farm)
-	}
-	if m.Woods.Title != "" {
-		arr = append(arr, &m.Woods)
-	}
-	if m.Quary.Title != "" {
-		arr = append(arr, &m.Quary)
-	}
-	if m.Builder.Title != "" {
-		arr = append(arr, &m.Builder)
-	}
+	arr = append(arr, &m.Rules)
+	arr = append(arr, &m.Farm)
+	arr = append(arr, &m.Woods)
+	arr = append(arr, &m.Quary)
+	arr = append(arr, &m.Builder)
 	return arr
 }
