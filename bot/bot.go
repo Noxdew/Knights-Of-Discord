@@ -26,7 +26,6 @@ func Start() {
 	s.AddHandler(handlers.ServerJoinHandler)
 	s.AddHandler(handlers.MessageReceiveHandler)
 	s.AddHandler(handlers.ReactionAddHandler)
-	s.AddHandler(handlers.ReactionRemoveHandler)
 
 	// Start the bot's session
 	err = s.Open()

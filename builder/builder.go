@@ -322,3 +322,24 @@ func buildReactions(message *structure.Message, s *discordgo.Session, g *discord
 		}
 	}
 }
+
+// AddUser assigns game roles to a user in the guild
+func AddUser(server *structure.Server, s *discordgo.Session, g *discordgo.Guild, u string) {
+	logger.Log.Info("User %s joining server %s (%s)...", u, g.Name, g.ID)
+
+	err := s.GuildMemberRoleAdd(server.ID, u, server.Roles.Villager.ID)
+	if err != nil {
+		logger.Log.Error(err.Error())
+		return
+	}
+	err = db.AddUser(server, &structure.User{
+		ID:           u,
+		Role:         server.Roles.Villager.ID,
+		Contribution: 0,
+	})
+	if err != nil {
+		logger.Log.Error(err.Error())
+	}
+
+	logger.Log.Info("User %s successfully joined %s (%s).", u, g.Name, g.ID)
+}

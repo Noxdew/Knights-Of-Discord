@@ -2,6 +2,7 @@ package structure
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 
 	"github.com/Noxdew/Knights-Of-Discord/logger"
@@ -18,6 +19,7 @@ type Server struct {
 	BotPerm  int      `json:"botPerm" bson:"botPerm"`
 	Channels Channels `json:"channels" bson:"channels"`
 	Messages Messages `json:"messages" bson:"messages"`
+	Users    []User   `json:"users" bson:"users"`
 }
 
 // Roles contains game Roles
@@ -100,6 +102,13 @@ type Field struct {
 	Inline bool   `json:"fInline" bson:"fInline"`
 }
 
+// User contains game information for a Discord User
+type User struct {
+	ID           string `json:"id" bson:"id"`
+	Role         string `json:"role" bson:"role"`
+	Contribution int    `json:"contribution" bson:"contribution"`
+}
+
 // BuildServer creates a new Server object to store Discord Guild information
 func (s *Server) BuildServer(g *discordgo.Guild) {
 	file, err := ioutil.ReadFile("structure.json")
@@ -113,6 +122,16 @@ func (s *Server) BuildServer(g *discordgo.Guild) {
 		return
 	}
 	s.ID = g.ID
+}
+
+// FindUser returns User object if one exist
+func (s *Server) FindUser(u string) (*User, error) {
+	for _, user := range s.Users {
+		if user.ID == u {
+			return &user, nil
+		}
+	}
+	return &User{}, errors.New("user doesn't exist")
 }
 
 // GetRoles returns all game Roles as a slice

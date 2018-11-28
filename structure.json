@@ -96,7 +96,7 @@
                 },
                 {
                     "title": "Project Information:",
-                    "value": "TODO PI",
+                    "value": "TODO PROJECT INFO",
                     "fInline": false
                 }
             ]
@@ -106,29 +106,7 @@
             "title": "**Wheat Farm**",
             "description": "Spend time to work at the Wheat Farm to gather <:wheat:512362286208516106> wheat for your Server.",
             "icon": "https://cdn.discordapp.com/attachments/512302843437252611/512358651059503132/Farm_Level_1.png",
-            "footer": "Wheat Farm action card",
-            "fields": [
-                {
-                    "title": "Building Level:",
-                    "value": "2",
-                    "fInline": true
-                },
-                {
-                    "title": "Current Production:",
-                    "value": "<:wheat:512362286208516106> 20",
-                    "fInline": true
-                },
-                {
-                    "title": "`Person` is working at the Farm",
-                    "value": "<:prog_s_f:513000280565088272><:prog_m_f:513000280368087040><:prog_m_f:513000280368087040><:prog_m_f:513000280368087040><:prog_m_f:513000280368087040><:prog_m_f:513000280368087040><:prog_m_e:513000280355373059><:prog_m_e:513000280355373059><:prog_m_e:513000280355373059><:prog_m_e:513000280355373059><:prog_m_e:513000280355373059><:prog_e_e:513000279898062851> 30/60 min",
-                    "fInline": false
-                },
-                {
-                    "title": "`Person` is working at the Farm",
-                    "value": "<:prog_s_f:513000280565088272><:prog_m_f:513000280368087040><:prog_m_f:513000280368087040><:prog_m_e:513000280355373059><:prog_m_e:513000280355373059><:prog_m_e:513000280355373059><:prog_m_e:513000280355373059><:prog_m_e:513000280355373059><:prog_m_e:513000280355373059><:prog_m_e:513000280355373059><:prog_m_e:513000280355373059><:prog_e_e:513000279898062851> 15/60 min",
-                    "fInline": false
-                }
-            ]
+            "footer": "Wheat Farm action card"
         },
         "woods": {
             "type": "card",
@@ -158,5 +136,6 @@
                 }
             ]
         }
-    }
+    },
+    "users": []
 }

@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/Noxdew/Knights-Of-Discord/builder"
+	"github.com/Noxdew/Knights-Of-Discord/command"
 	"github.com/Noxdew/Knights-Of-Discord/config"
 	"github.com/Noxdew/Knights-Of-Discord/db"
 	"github.com/Noxdew/Knights-Of-Discord/logger"
@@ -44,15 +45,16 @@ func MessageReceiveHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 	server, err := db.GetServer(g)
-	if err != nil && err != db.NotFound {
+	if err != nil {
 		logger.Log.Error(err.Error())
 		return
 	}
 	if strings.HasPrefix(m.Content, config.Get().Prefix) {
-		command := strings.Split(m.Content, config.Get().Prefix)[1]
-		if command == "closeGame" && m.Author.ID == g.OwnerID {
-			s.ChannelMessageSend(m.ChannelID, "Closing Game...")
-			builder.DestroyServer(server, s, g)
+		trigger := strings.Split(m.Content, config.Get().Prefix)[1]
+		for _, cmd := range command.MessageCommands {
+			if cmd.Trigger() == trigger {
+				cmd.Execute(server, s, g, m)
+			}
 		}
 	}
 }
@@ -81,62 +83,15 @@ func ReactionAddHandler(s *discordgo.Session, r *discordgo.MessageReactionAdd) {
 		return
 	}
 	server, err := db.GetServer(g)
-	if err != nil && err != db.NotFound {
+	if err != nil {
 		logger.Log.Error(err.Error())
 		return
 	}
 
 	// Call reaction command
-	if server.Messages.Rules.ID == r.MessageID {
-		if r.Emoji.ID == "514099648949125153" {
-			response := "User " + u.Username + " joining game!"
-			_, err := s.ChannelMessageSend(r.ChannelID, response)
-			if err != nil {
-				logger.Log.Error(err.Error())
-				return
-			}
-		}
-	}
-}
-
-// ReactionRemoveHandler function called when a reaction is sent
-func ReactionRemoveHandler(s *discordgo.Session, r *discordgo.MessageReactionRemove) {
-	// Check author for bot
-	u, err := s.User(r.UserID)
-	if err != nil {
-		logger.Log.Error(err.Error())
-		return
-	}
-	if u.Bot {
-		return
-	}
-
-	// Fetch server object
-	c, err := s.Channel(r.ChannelID)
-	if err != nil {
-		logger.Log.Error(err.Error())
-		return
-	}
-	g, err := s.Guild(c.GuildID)
-	if err != nil {
-		logger.Log.Error(err.Error())
-		return
-	}
-	server, err := db.GetServer(g)
-	if err != nil && err != db.NotFound {
-		logger.Log.Error(err.Error())
-		return
-	}
-
-	// Call reaction command
-	if server.Messages.Rules.ID == r.MessageID {
-		if r.Emoji.ID == "514099648949125153" {
-			response := "User " + u.Username + " leaving game game!"
-			_, err := s.ChannelMessageSend(r.ChannelID, response)
-			if err != nil {
-				logger.Log.Error(err.Error())
-				return
-			}
+	for _, cmd := range command.ReactionCommands {
+		if cmd.Trigger() == r.Emoji.ID {
+			cmd.Execute(server, s, g, r)
 		}
 	}
 }
