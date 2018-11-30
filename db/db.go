@@ -6,7 +6,6 @@ import (
 	"github.com/Noxdew/Knights-Of-Discord/config"
 	"github.com/Noxdew/Knights-Of-Discord/logger"
 	"github.com/Noxdew/Knights-Of-Discord/structure"
-	"github.com/bwmarrin/discordgo"
 	"github.com/mongodb/mongo-go-driver/bson"
 	"github.com/mongodb/mongo-go-driver/mongo"
 )
@@ -27,12 +26,12 @@ func connect() *mongo.Client {
 }
 
 // GetServer returns a Server object for the Discord Guild
-func GetServer(g *discordgo.Guild) (*structure.Server, error) {
+func GetServer(g string) (*structure.Server, error) {
 	client := connect()
 	defer client.Disconnect(context.Background())
 	collection := client.Database("knights-of-discord").Collection("servers")
-	filter := bson.NewDocument(bson.EC.String("id", g.ID))
-	server := structure.Server{}
+	filter := bson.NewDocument(bson.EC.String("id", g))
+	server := structure.DefaultServer
 	doc := collection.FindOne(context.Background(), filter)
 	err := doc.Decode(&server)
 	return &server, err
@@ -48,12 +47,23 @@ func CreateServer(s *structure.Server) error {
 }
 
 // UpdateServerPlaying runs or stops a game for given Server
-func UpdateServerPlaying(s *structure.Server, b bool) error {
+func UpdateServerPlaying(s *structure.Server) error {
 	client := connect()
 	defer client.Disconnect(context.Background())
 	collection := client.Database("knights-of-discord").Collection("servers")
 	filter := bson.NewDocument(bson.EC.String("id", s.ID))
-	replacement := bson.NewDocument(bson.EC.SubDocumentFromElements("$set", bson.EC.Boolean("playing", b)))
+	replacement := bson.NewDocument(bson.EC.SubDocumentFromElements("$set", bson.EC.Boolean("playing", s.Playing)))
+	_, err := collection.UpdateOne(context.Background(), filter, replacement)
+	return err
+}
+
+// AddServerUser adds a new User to the game
+func AddServerUser(s *structure.Server, u *structure.User) error {
+	client := connect()
+	defer client.Disconnect(context.Background())
+	collection := client.Database("knights-of-discord").Collection("servers")
+	filter := bson.NewDocument(bson.EC.String("id", s.ID))
+	replacement := bson.NewDocument(bson.EC.SubDocumentFromElements("$push", bson.EC.Interface("users", u)))
 	_, err := collection.UpdateOne(context.Background(), filter, replacement)
 	return err
 }
@@ -65,16 +75,5 @@ func DeleteServer(s *structure.Server) error {
 	collection := client.Database("knights-of-discord").Collection("servers")
 	filter := bson.NewDocument(bson.EC.String("id", s.ID))
 	_, err := collection.DeleteOne(context.Background(), filter)
-	return err
-}
-
-// AddUser uploads a User object
-func AddUser(s *structure.Server, u *structure.User) error {
-	client := connect()
-	defer client.Disconnect(context.Background())
-	collection := client.Database("knights-of-discord").Collection("servers")
-	filter := bson.NewDocument(bson.EC.String("id", s.ID))
-	replacement := bson.NewDocument(bson.EC.SubDocumentFromElements("$push", bson.EC.Interface("users", u)))
-	_, err := collection.UpdateOne(context.Background(), filter, replacement)
 	return err
 }

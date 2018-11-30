@@ -8,6 +8,7 @@ import (
 	"github.com/Noxdew/Knights-Of-Discord/config"
 	"github.com/Noxdew/Knights-Of-Discord/handlers"
 	"github.com/Noxdew/Knights-Of-Discord/logger"
+
 	"github.com/bwmarrin/discordgo"
 )
 

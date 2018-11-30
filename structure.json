@@ -1,79 +1,104 @@
 {
-    "playing": false,
-    "power": 0,
+    "resources": {
+        "r1": {
+            "name": "wood",
+            "count": 0,
+            "icon": ":wood:512362285092700163"
+        },
+        "r2": {
+            "name": "wheat",
+            "count": 0,
+            "icon": ":wheat:512362286208516106"
+        },
+        "r3": {
+            "name": "stone",
+            "count": 0,
+            "icon": ":stone:512362285113671712"
+        }
+    },
+    "botPerm": 871890257,
+    "socialPerm": 379968,
+    "actionPerm": 328768,
+    "rolePerm": 330816,
     "roles": {
-        "villager": {
-            "defName": "KoD-Villager",
-            "permission": 330816,
-            "level": 0
+        "r1": {
+            "defaultName": "KoD-Villager",
+            "mentionable": false,
+            "hoist": false,
+            "tier": 1
         },
-        "esquire": {
-            "defName": "KoD-Esquire",
-            "permission": 330816,
-            "level": 1
+        "r2": {
+            "defaultName": "KoD-Esquire",
+            "mentionable": false,
+            "hoist": false,
+            "tier": 2
         },
-        "knight": {
-            "defName": "KoD-Knight",
-            "permission": 330816,
-            "level": 2
-        },
-        "everyone": {
-            "defName": "everyone",
-            "level": -1
+        "r3": {
+            "defaultName": "KoD-Knight",
+            "mentionable": false,
+            "hoist": false,
+            "tier": 3
         }
     },
     "category": {
-        "defName": "Knights of Discord"
+        "defaultName": "Knights of Discord"
     },
-    "botPerm": 871890257,
     "channels": {
         "rules": {
-            "defName": "rules",
-            "level": -1,
-            "allow": 328768,
-            "deny": 871561489
+            "defaultName": "rules",
+            "topic": "Game rules, command list, how to play, and project information.",
+            "tier": 0,
+            "position": 0,
+            "type": "action"
         },
         "announcements": {
-            "defName": "announcements",
-            "level": 0,
-            "allow": 328768,
-		    "deny": 871561489
+            "defaultName": "announcements",
+            "topic": "General game announcements channel.",
+            "tier": 1,
+            "position": 1,
+            "type": "action"
         },
-        "outskirts": {
-            "defName": "outskirts",
-            "level": 0,
-            "allow": 328768,
-            "deny": 871561489
+        "c1social": {
+            "defaultName": "tavern",
+            "topic": "Game discussion and social channel.",
+            "tier": 1,
+            "position": 2,
+            "type": "social"
         },
-        "tavern": {
-            "defName": "tavern",
-            "level": 0,
-            "allow": 379968,
-            "deny": 871510289
+        "c1action": {
+            "defaultName": "outskirts",
+            "topic": "Game card channel.",
+            "tier": 1,
+            "position": 3,
+            "type": "action"
         },
-        "innerCity": {
-            "defName": "inner-city",
-            "level": 1,
-            "allow": 328768,
-		    "deny": 871561489
+        "c2social": {
+            "defaultName": "inn",
+            "topic": "Game discussion and social channel.",
+            "tier": 2,
+            "position": 4,
+            "type": "social"
         },
-        "inn": {
-            "defName": "inn",
-            "level": 1,
-            "allow": 379968,
-            "deny": 871510289
+        "c2action": {
+            "defaultName": "inner-city",
+            "topic": "Game card channel.",
+            "tier": 2,
+            "position": 5,
+            "type": "action"
         },
-        "castle": {
-            "defName": "castle",
-            "level": 2,
-            "allow": 328768,
-		    "deny": 871561489
+        "c3social": {
+            "defaultName": "mead-hall",
+            "topic": "Game discussion and social channel.",
+            "tier": 3,
+            "position": 6,
+            "type": "social"
         },
-        "meadHall": {
-            "defName": "mead-hall",
-            "level": 2,
-            "allow": 379968,
-            "deny": 871510289
+        "c3action": {
+            "defaultName": "castle",
+            "topic": "Game card channel.",
+            "tier": 3,
+            "position": 7,
+            "type": "action"
         }
     },
     "messages": {
@@ -100,42 +125,9 @@
                     "fInline": false
                 }
             ]
-        },
-        "farm": {
-            "type": "card",
-            "title": "**Wheat Farm**",
-            "description": "Spend time to work at the Wheat Farm to gather <:wheat:512362286208516106> wheat for your Server.",
-            "icon": "https://cdn.discordapp.com/attachments/512302843437252611/512358651059503132/Farm_Level_1.png",
-            "footer": "Wheat Farm action card"
-        },
-        "woods": {
-            "type": "card",
-            "title": "**Forester Camp**",
-            "description": "Spend time to work at the Forester Camp to gather <:wood:512362285092700163> wood for your Server.",
-            "icon": "https://cdn.discordapp.com/attachments/512302843437252611/512358662325403677/Pinewood_Cutter_Level_1.png",
-            "footer": "Forester Camp action card"
-        },
-        "quary": {
-            "type": "card",
-            "title": "**Stone Mason**",
-            "description": "Spend time to work at the Stone Mason to gather <:stone:512362285113671712> stone for your Server.",
-            "icon": "https://cdn.discordapp.com/attachments/512302843437252611/512358660924506112/Mason_Level_1.png",
-            "footer": "Stone Mason action card"
-        },
-        "builder": {
-            "type": "shop",
-            "title": "**Builder's Hall**",
-            "description": "Spend time and resources to upgrade Server buildings. The higher the building level, the more resources it produces for the Server.",
-            "icon": "https://cdn.discordapp.com/attachments/512302843437252611/512358665819521034/Storehouse_Level_1.png",
-            "footer": "Builder's Hall action card",
-            "fields": [
-                {
-                    "title": "Wheat Farm",
-                    "value": "Current Level: <:level:512999766330834964> 2\nStorage: <:wheat:512362286208516106> 150\nUpgrade Cost:<:stone:512362285113671712> 100 <:wood:512362285092700163> 100\nUpgrade Building: <:wheatup:512968723259195394>",
-                    "fInline": false
-                }
-            ]
         }
     },
-    "users": []
+    "actions": {
+        "join": ":kod:514099648949125153"
+    }
 }

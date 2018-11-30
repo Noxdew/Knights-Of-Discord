@@ -11,15 +11,17 @@ import (
 func BuildServer(server *structure.Server, s *discordgo.Session, g *discordgo.Guild) {
 	logger.Log.Info("Building Server for Guild %s (id: %s)...", g.Name, g.ID)
 
-	// Create Server object
-	server.BuildServer(g)
-
 	// Build Discord Structure
 	buildRoles(server, s, g)
 	buildCategory(server, s, g)
 	buildChannels(server, s, g)
 	buildPermissions(server, s, g)
 	buildMessages(server, s, g)
+
+	// Update Server object
+	server.ID = g.ID
+	server.Playing = true
+	server.Users = []*structure.User{}
 
 	// Upload to DB
 	err := db.CreateServer(server)
@@ -29,14 +31,16 @@ func BuildServer(server *structure.Server, s *discordgo.Session, g *discordgo.Gu
 	}
 
 	logger.Log.Info("Server for Guild %s (id: %s) successfully built.", g.Name, g.ID)
+	return
 }
 
 // DestroyServer removes game instance from guild `g`
 func DestroyServer(server *structure.Server, s *discordgo.Session, g *discordgo.Guild) {
 	logger.Log.Info("Destroying Server %s (%s)...", g.Name, g.ID)
 
-	// Close the game running on Server
-	err := db.UpdateServerPlaying(server, false)
+	// Update Server Object
+	server.Playing = false
+	err := db.UpdateServerPlaying(server)
 	if err != nil {
 		logger.Log.Error(err.Error())
 		return
@@ -67,37 +71,28 @@ func DestroyServer(server *structure.Server, s *discordgo.Session, g *discordgo.
 func buildRoles(server *structure.Server, s *discordgo.Session, g *discordgo.Guild) {
 	logger.Log.Info("Building Roles for server %s (%s)...", g.Name, g.ID)
 
-	// Get @everyone Role
-	var everyone *discordgo.Role
-	dRoles, err := s.GuildRoles(g.ID)
-	if err != nil {
-		logger.Log.Error(err.Error())
-		return
-	}
-	for _, role := range dRoles {
-		if role.Name == "@everyone" {
-			everyone = role
+	for _, r := range server.Roles {
+		// Create Discord Role
+		role, err := s.GuildRoleCreate(g.ID)
+		if err != nil {
+			logger.Log.Error(err.Error())
+			return
 		}
+		_, err = s.GuildRoleEdit(g.ID, role.ID, r.DefaultName, 0, r.Hoist, server.RolePerm, r.Mentionable)
+		if err != nil {
+			logger.Log.Error(err.Error())
+			return
+		}
+
+		// Update Server object
+		r.ID = role.ID
 	}
 
-	roles := server.Roles.GetRoles()
-	for i, r := range roles {
-		if r.DefName == "everyone" {
-			// Save @everyone to object
-			roles[i].ID = everyone.ID
-		} else {
-			// Create Role
-			role, err := s.GuildRoleCreate(g.ID)
-			if err != nil {
-				logger.Log.Error(err.Error())
-				return
-			}
-			_, err = s.GuildRoleEdit(g.ID, role.ID, r.DefName, 0, false, r.Permission, true)
-			if err != nil {
-				logger.Log.Error(err.Error())
-				return
-			}
-			roles[i].ID = role.ID
+	// Update Server Object
+	for _, role := range g.Roles {
+		if role.Name == "@everyone" {
+			server.EveryoneRole = role.ID
+			break
 		}
 	}
 
@@ -107,13 +102,10 @@ func buildRoles(server *structure.Server, s *discordgo.Session, g *discordgo.Gui
 func destroyRoles(server *structure.Server, s *discordgo.Session, g *discordgo.Guild) {
 	logger.Log.Info("Destroying Roles from server %s (%s)...", g.Name, g.ID)
 
-	roles := server.Roles.GetRoles()
-	for _, role := range roles {
-		if role.Level >= 0 {
-			err := s.GuildRoleDelete(g.ID, role.ID)
-			if err != nil {
-				logger.Log.Error(err.Error())
-			}
+	for _, role := range server.Roles {
+		err := s.GuildRoleDelete(g.ID, role.ID)
+		if err != nil {
+			logger.Log.Error(err.Error())
 		}
 	}
 
@@ -123,11 +115,14 @@ func destroyRoles(server *structure.Server, s *discordgo.Session, g *discordgo.G
 func buildCategory(server *structure.Server, s *discordgo.Session, g *discordgo.Guild) {
 	logger.Log.Info("Building Category for server %s (%s)", g.Name, g.ID)
 
-	category, err := s.GuildChannelCreate(g.ID, server.Category.DefName, "4")
+	// Create Discord Category
+	category, err := s.GuildChannelCreate(g.ID, server.Category.DefaultName, "4")
 	if err != nil {
 		logger.Log.Error(err.Error())
 		return
 	}
+
+	// Update Server Object
 	server.Category.ID = category.ID
 
 	logger.Log.Info("Category for server %s (%s) successfully built.", g.Name, g.ID)
@@ -148,23 +143,25 @@ func destroyCategory(server *structure.Server, s *discordgo.Session, g *discordg
 func buildChannels(server *structure.Server, s *discordgo.Session, g *discordgo.Guild) {
 	logger.Log.Info("Building Channels for server %s (%s)...", g.Name, g.ID)
 
-	channels := server.Channels.GetChannels()
-	for i, c := range channels {
-		// Create Channel
-		channel, err := s.GuildChannelCreate(g.ID, c.DefName, "0")
+	for _, c := range server.Channels {
+		// Create Discord Channel
+		channel, err := s.GuildChannelCreate(g.ID, c.DefaultName, "0")
 		if err != nil {
 			logger.Log.Error(err.Error())
 			return
 		}
 		_, err = s.ChannelEditComplex(channel.ID, &discordgo.ChannelEdit{
 			ParentID: server.Category.ID,
-			Position: i,
+			Position: c.Position,
+			Topic:    c.Topic,
 		})
 		if err != nil {
 			logger.Log.Error(err.Error())
 			return
 		}
-		channels[i].ID = channel.ID
+
+		// Update Server object
+		c.ID = channel.ID
 	}
 
 	logger.Log.Info("Channels for server %s (%s) successfully built.", g.Name, g.ID)
@@ -173,8 +170,7 @@ func buildChannels(server *structure.Server, s *discordgo.Session, g *discordgo.
 func destroyChannels(server *structure.Server, s *discordgo.Session, g *discordgo.Guild) {
 	logger.Log.Info("Destroying Channels from server %s (%s)...", g.Name, g.ID)
 
-	channels := server.Channels.GetChannels()
-	for _, channel := range channels {
+	for _, channel := range server.Channels {
 		_, err := s.ChannelDelete(channel.ID)
 		if err != nil {
 			logger.Log.Error(err.Error())
@@ -187,64 +183,53 @@ func destroyChannels(server *structure.Server, s *discordgo.Session, g *discordg
 func buildPermissions(server *structure.Server, s *discordgo.Session, g *discordgo.Guild) {
 	logger.Log.Info("Building Permissions for server %s (%s)...", g.Name, g.ID)
 
-	channels := server.Channels.GetChannels()
 	bot, err := s.User("@me")
-	for i, channel := range channels {
-		// Set Bot Permissions
+	for _, channel := range server.Channels {
+		// Set Discord Permissions for Bot
 		err = s.ChannelPermissionSet(channel.ID, bot.ID, "member", server.BotPerm, 0)
 		if err != nil {
 			logger.Log.Error(err.Error())
 			return
 		}
-		channels[i].Permissions = append(channels[i].Permissions, structure.Perm{
-			Role:  bot.ID,
-			Allow: server.BotPerm,
-			Deny:  0,
-		})
 
-		if channel.Level < 0 {
-			// Hub Channel
-			err := s.ChannelPermissionSet(channel.ID, server.Roles.Everyone.ID, "role", channel.Allow, channel.Deny)
+		if channel.Tier == 0 {
+			// Set Discord Permission for Hub Channel
+			err := s.ChannelPermissionSet(channel.ID, server.EveryoneRole, "role", server.ActionPerm, (server.BotPerm - server.ActionPerm))
 			if err != nil {
 				logger.Log.Error(err.Error())
 				return
 			}
-			channels[i].Permissions = append(channels[i].Permissions, structure.Perm{
-				Role:  server.Roles.Everyone.ID,
-				Allow: channel.Allow,
-				Deny:  channel.Deny,
-			})
 		} else {
-			err := s.ChannelPermissionSet(channel.ID, server.Roles.Everyone.ID, "role", 0, server.BotPerm)
+			// Set Discord Permissions for Game/Social Channel
+			// @everyone Permissions
+			err := s.ChannelPermissionSet(channel.ID, server.EveryoneRole, "role", 0, server.BotPerm)
 			if err != nil {
 				logger.Log.Error(err.Error())
 				return
 			}
-			channels[i].Permissions = append(channels[i].Permissions, structure.Perm{
-				Role:  server.Roles.Everyone.ID,
-				Allow: 0,
-				Deny:  server.BotPerm,
-			})
-			// Game Channel
-			for _, role := range server.Roles.GetRoles() {
-				if channel.Level <= role.Level {
-					err := s.ChannelPermissionSet(channel.ID, role.ID, "role", channel.Allow, channel.Deny)
-					if err != nil {
-						logger.Log.Error(err.Error())
-						return
+
+			// Game Role Permissions
+			for _, role := range server.Roles {
+				if role.Tier >= channel.Tier {
+					if channel.Type == "social" {
+						// Social Channel
+						err := s.ChannelPermissionSet(channel.ID, role.ID, "role", server.SocialPerm, (server.BotPerm - server.SocialPerm))
+						if err != nil {
+							logger.Log.Error(err.Error())
+							return
+						}
+					} else if channel.Type == "action" {
+						// Game Channel
+						err := s.ChannelPermissionSet(channel.ID, role.ID, "role", server.ActionPerm, (server.BotPerm - server.ActionPerm))
+						if err != nil {
+							logger.Log.Error(err.Error())
+							return
+						}
 					}
-					channels[i].Permissions = append(channels[i].Permissions, structure.Perm{
-						Role:  role.ID,
-						Allow: channel.Allow,
-						Deny:  channel.Deny,
-					})
 				}
 			}
 		}
 	}
-
-	// Set Message Channels
-	server.SetMessageChannel()
 
 	logger.Log.Info("Permissions for server %s (%s) successfully built.", g.Name, g.ID)
 }
@@ -253,12 +238,12 @@ func buildMessages(server *structure.Server, s *discordgo.Session, g *discordgo.
 	logger.Log.Info("Building Messages for Guild %s (id: %s)...", g.Name, g.ID)
 
 	// Send Messages
-	for _, message := range server.Messages.GetMessages() {
+	for _, message := range server.Messages {
 		// Create embed
 		embed := buildEmbed(message)
 
 		// Send Message
-		m, err := s.ChannelMessageSendEmbed(message.Channel, embed)
+		m, err := s.ChannelMessageSendEmbed(server.Channels["rules"].ID, embed)
 		if err != nil {
 			logger.Log.Error(err.Error())
 			return
@@ -266,15 +251,22 @@ func buildMessages(server *structure.Server, s *discordgo.Session, g *discordgo.
 
 		// Update Message object
 		message.ID = m.ID
+		message.ChannelID = m.ChannelID
 
 		// Add reactions
-		buildReactions(message, s, g)
+		if message.Type == "info" {
+			err := s.MessageReactionAdd(message.ChannelID, message.ID, server.Actions["join"])
+			if err != nil {
+				logger.Log.Error(err.Error())
+			}
+		}
 	}
 
 	logger.Log.Info("Messages for server %s (%s) successfully built.", g.Name, g.ID)
 }
 
 func buildEmbed(m *structure.Message) *discordgo.MessageEmbed {
+	// Create Discord Embed
 	embed := discordgo.MessageEmbed{
 		Title:       m.Title,
 		Description: m.Description,
@@ -290,14 +282,6 @@ func buildEmbed(m *structure.Message) *discordgo.MessageEmbed {
 	// Set Color
 	if m.Type == "info" {
 		embed.Color = 16098851
-	} else if m.Type == "card" {
-		embed.Color = 6711705
-	} else if m.Type == "active" {
-		embed.Color = 8311585
-	} else if m.Type == "danger" {
-		embed.Color = 13632027
-	} else if m.Type == "shop" {
-		embed.Color = 12390624
 	} else {
 		embed.Color = 4868682
 	}
@@ -305,41 +289,10 @@ func buildEmbed(m *structure.Message) *discordgo.MessageEmbed {
 	// Set Fields
 	for _, field := range m.Fields {
 		embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{
-			Name:   field.Title,
-			Value:  field.Value,
-			Inline: field.Inline,
+			Name:  field.Title,
+			Value: field.Value,
 		})
 	}
 
 	return &embed
-}
-
-func buildReactions(message *structure.Message, s *discordgo.Session, g *discordgo.Guild) {
-	if message.Type == "info" {
-		err := s.MessageReactionAdd(message.Channel, message.ID, ":kod:514099648949125153")
-		if err != nil {
-			logger.Log.Error(err.Error())
-		}
-	}
-}
-
-// AddUser assigns game roles to a user in the guild
-func AddUser(server *structure.Server, s *discordgo.Session, g *discordgo.Guild, u string) {
-	logger.Log.Info("User %s joining server %s (%s)...", u, g.Name, g.ID)
-
-	err := s.GuildMemberRoleAdd(server.ID, u, server.Roles.Villager.ID)
-	if err != nil {
-		logger.Log.Error(err.Error())
-		return
-	}
-	err = db.AddUser(server, &structure.User{
-		ID:           u,
-		Role:         server.Roles.Villager.ID,
-		Contribution: 0,
-	})
-	if err != nil {
-		logger.Log.Error(err.Error())
-	}
-
-	logger.Log.Info("User %s successfully joined %s (%s).", u, g.Name, g.ID)
 }
