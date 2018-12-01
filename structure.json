@@ -23,19 +23,19 @@
     "roles": {
         "r1": {
             "defaultName": "KoD-Villager",
-            "mentionable": false,
+            "mentionable": true,
             "hoist": false,
             "tier": 1
         },
         "r2": {
             "defaultName": "KoD-Esquire",
-            "mentionable": false,
+            "mentionable": true,
             "hoist": false,
             "tier": 2
         },
         "r3": {
             "defaultName": "KoD-Knight",
-            "mentionable": false,
+            "mentionable": true,
             "hoist": false,
             "tier": 3
         }

@@ -203,7 +203,7 @@ func (*LeaveServer) Trigger() string {
 
 // Description for LeaveServer command
 func (*LeaveServer) Description() string {
-	return "Removes the user from the game running on this server.\n**WARNING** Leaving the game will cause you to lose all your progrogression in the server!\n"
+	return "Removes the user from the game running on this server.\n**WARNING** Leaving the game will cause you to lose all your progression in the server!\n"
 }
 
 // MessageCommands array

@@ -32,8 +32,31 @@ func GetServer(g string) (*structure.Server, error) {
 	collection := client.Database("knights-of-discord").Collection("servers")
 	filter := bson.NewDocument(bson.EC.String("id", g))
 	server := structure.DefaultServer
+	dbServer := structure.Server{}
 	doc := collection.FindOne(context.Background(), filter)
-	err := doc.Decode(&server)
+	err := doc.Decode(&dbServer)
+
+	if err == nil {
+		server.ID = dbServer.ID
+		server.Playing = dbServer.Playing
+		for key, resource := range server.Resources {
+			resource.Count = dbServer.Resources[key].Count
+		}
+		server.EveryoneRole = dbServer.EveryoneRole
+		for key, role := range server.Roles {
+			role.ID = dbServer.Roles[key].ID
+		}
+		server.Category.ID = dbServer.Category.ID
+		for key, channel := range server.Channels {
+			channel.ID = dbServer.Channels[key].ID
+		}
+		for key, message := range server.Messages {
+			message.ID = dbServer.Messages[key].ID
+			message.ChannelID = dbServer.Messages[key].ChannelID
+		}
+		server.Users = dbServer.Users
+	}
+
 	return &server, err
 }
 

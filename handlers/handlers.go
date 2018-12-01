@@ -114,3 +114,120 @@ func ReactionAddHandler(s *discordgo.Session, r *discordgo.MessageReactionAdd) {
 		}
 	}
 }
+
+// RoleEditHandler function called when a Discord Role receives an update
+func RoleEditHandler(s *discordgo.Session, r *discordgo.GuildRoleUpdate) {
+	// Get Server object
+	server, err := db.GetServer(r.GuildID)
+	if err != nil && err != db.NotFound {
+		logger.Log.Error(err.Error())
+		return
+	} else if err == db.NotFound {
+		return
+	}
+
+	// Check for playing Server
+	if !server.Playing {
+		return
+	}
+
+	// Check Discord Role
+	for _, role := range server.Roles {
+		if role.ID == r.Role.ID {
+			// Revert to game requirement
+			if r.Role.Hoist != role.Hoist || r.Role.Mentionable != role.Mentionable || r.Role.Permissions != server.RolePerm {
+				_, err = s.GuildRoleEdit(server.ID, r.Role.ID, r.Role.Name, r.Role.Color, role.Hoist, server.RolePerm, role.Mentionable)
+				if err != nil {
+					logger.Log.Error(err.Error())
+				}
+			}
+			return
+		}
+	}
+}
+
+// ChannelEditHandler function called  when a Discord Channel receives an update
+func ChannelEditHandler(s *discordgo.Session, c *discordgo.ChannelUpdate) {
+	// Get Server object
+	server, err := db.GetServer(c.GuildID)
+	if err != nil && err != db.NotFound {
+		logger.Log.Error(err.Error())
+		return
+	} else if err == db.NotFound {
+		return
+	}
+
+	// Check for playing Server
+	if !server.Playing {
+		return
+	}
+
+	// Check Discord Category
+	if c.ID == server.Category.ID {
+		if len(c.PermissionOverwrites) > 0 {
+			_, err = s.ChannelEditComplex(c.ID, &discordgo.ChannelEdit{
+				PermissionOverwrites: []*discordgo.PermissionOverwrite{},
+			})
+			if err != nil {
+				logger.Log.Error(err.Error())
+			}
+		}
+		return
+	}
+
+	// Check Discord Channel
+	for _, channel := range server.Channels {
+		if channel.ID == c.ID {
+			// Revert to game requirement
+			if c.Position != channel.Position || c.ParentID != server.Category.ID {
+				_, err = s.ChannelEditComplex(c.ID, &discordgo.ChannelEdit{
+					ParentID: server.Category.ID,
+					Position: channel.Position,
+				})
+				if err != nil {
+					logger.Log.Error(err.Error())
+				}
+			}
+
+			// Check Permissions
+			if channel.Tier == 0 {
+				// Set Discord Permission for Hub Channel
+				err := s.ChannelPermissionSet(channel.ID, server.EveryoneRole, "role", server.ActionPerm, (server.BotPerm - server.ActionPerm))
+				if err != nil {
+					logger.Log.Error(err.Error())
+					return
+				}
+			} else {
+				// Set Discord Permissions for Game/Social Channel
+				// @everyone Permissions
+				err := s.ChannelPermissionSet(channel.ID, server.EveryoneRole, "role", 0, server.BotPerm)
+				if err != nil {
+					logger.Log.Error(err.Error())
+					return
+				}
+
+				// Game Role Permissions
+				for _, role := range server.Roles {
+					if role.Tier >= channel.Tier {
+						if channel.Type == "social" {
+							// Social Channel
+							err := s.ChannelPermissionSet(channel.ID, role.ID, "role", server.SocialPerm, (server.BotPerm - server.SocialPerm))
+							if err != nil {
+								logger.Log.Error(err.Error())
+								return
+							}
+						} else if channel.Type == "action" {
+							// Game Channel
+							err := s.ChannelPermissionSet(channel.ID, role.ID, "role", server.ActionPerm, (server.BotPerm - server.ActionPerm))
+							if err != nil {
+								logger.Log.Error(err.Error())
+								return
+							}
+						}
+					}
+				}
+			}
+			return
+		}
+	}
+}
