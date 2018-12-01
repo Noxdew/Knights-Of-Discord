@@ -240,7 +240,7 @@ func buildMessages(server *structure.Server, s *discordgo.Session, g *discordgo.
 	// Send Messages
 	for _, message := range server.Messages {
 		// Create embed
-		embed := buildEmbed(message)
+		embed := BuildEmbed(message)
 
 		// Send Message
 		m, err := s.ChannelMessageSendEmbed(server.Channels["rules"].ID, embed)
@@ -265,7 +265,8 @@ func buildMessages(server *structure.Server, s *discordgo.Session, g *discordgo.
 	logger.Log.Info("Messages for server %s (%s) successfully built.", g.Name, g.ID)
 }
 
-func buildEmbed(m *structure.Message) *discordgo.MessageEmbed {
+// BuildEmbed creates a new Discord Embed
+func BuildEmbed(m *structure.Message) *discordgo.MessageEmbed {
 	// Create Discord Embed
 	embed := discordgo.MessageEmbed{
 		Title:       m.Title,
@@ -282,6 +283,8 @@ func buildEmbed(m *structure.Message) *discordgo.MessageEmbed {
 	// Set Color
 	if m.Type == "info" {
 		embed.Color = 16098851
+	} else if m.Type == "system" {
+		embed.Color = 10372089
 	} else {
 		embed.Color = 4868682
 	}

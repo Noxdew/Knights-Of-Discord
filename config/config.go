@@ -27,6 +27,8 @@ func Get() *Definition {
 // Load reads the config json file and parses it, then stores the values for the rest of the application to use
 func Load() {
 	logger.Log.Info("Reading config file...")
+
+	// Open json file
 	file, err := ioutil.ReadFile("config.json")
 	if err != nil {
 		logger.Log.Panic(err.Error())

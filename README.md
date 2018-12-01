@@ -15,9 +15,10 @@ Note that adding the bot requires allowing the following permissions:
 6. **Mention Everyone** - Allows for using the `@everyone` tag to notify all users in a channel, and the `@here` tag to notify all online users in a channel.
 7. **Use External Emoji** - Allows the usage of custom emojis from other servers.
 8. **Manage Roles** - Allows management and editing of roles.
+9. **Embed Links** - Links sent by users with this permission will be auto-embedded.
 
 
-[Click here to add Knights Of Discord to your server/guild](https://discordapp.com/oauth2/authorize?client_id=487744442531315712&scope=bot&permissions=268840016)
+[Click here to add Knights Of Discord to your server/guild](https://discordapp.com/oauth2/authorize?client_id=487744442531315712&scope=bot&permissions=268856400)
 
 ## Current State
 

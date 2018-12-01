@@ -63,7 +63,22 @@ func MessageReceiveHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 
 		// Fallback for wrong command
-		// TODO
+		// Create response message
+		message := &structure.Message{
+			Title:  "Unknown command. Try using `!kod-help` for a list of all game commands.",
+			Type:   "system",
+			Icon:   "https://cdn.discordapp.com/attachments/512302843437252611/512302951814004752/ac6918be09a389876ee5663d6b08b55a.png",
+			Footer: "Command execution feedback.",
+		}
+
+		// Build Embed
+		embed := builder.BuildEmbed(message)
+
+		// Send response
+		_, err = s.ChannelMessageSendEmbed(m.ChannelID, embed)
+		if err != nil {
+			logger.Log.Error(err.Error())
+		}
 	}
 }
 

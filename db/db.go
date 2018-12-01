@@ -68,6 +68,17 @@ func AddServerUser(s *structure.Server, u *structure.User) error {
 	return err
 }
 
+// RemoveServerUser removes an existing User from the game
+func RemoveServerUser(s *structure.Server, u *structure.User) error {
+	client := connect()
+	defer client.Disconnect(context.Background())
+	collection := client.Database("knights-of-discord").Collection("servers")
+	filter := bson.NewDocument(bson.EC.String("id", s.ID))
+	replacement := bson.NewDocument(bson.EC.SubDocumentFromElements("$pull", bson.EC.Interface("users", u)))
+	_, err := collection.UpdateOne(context.Background(), filter, replacement)
+	return err
+}
+
 // DeleteServer removes a Server object
 func DeleteServer(s *structure.Server) error {
 	client := connect()
